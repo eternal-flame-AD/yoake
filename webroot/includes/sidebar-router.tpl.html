@@ -1,0 +1,120 @@
+<nav id="sidebar-tpl" class="d-none">
+
+</nav>
+<script>
+    getAuth().then(auth => {
+        sidebarReal = document.getElementById("sidebar");
+        sidebarTpl = document.getElementById("sidebar-tpl");
+        sidebarTpl.innerHTML = sidebarReal.innerHTML;
+
+
+        let state = {};
+        sidebarTpl.querySelectorAll("a[data-state-bind]").forEach(a => {
+            const stateKey = a.getAttribute("data-state-bind");
+            s = {
+                trimaProcedure: "valid",
+                page: a.getAttribute("href").replace("#", "")
+            };
+
+            const authProfile = a.getAttribute("data-auth-bind");
+
+            if (authProfile) {
+                if (auth.Roles && auth.Roles.indexOf(authProfile) >= 0) {
+                    // we have that role
+                } else {
+                    s.login = authProfile
+                    s.trimaProcedure = "ineligible";
+                }
+            }
+            state[stateKey] = s;
+
+        })
+
+
+        window.renderSidebar = function () {
+            if (!window.location.hash || window.location.hash === "#") {
+                window.location.hash = "#dashboard";
+            }
+
+            function normalizeHash() {
+                let hash = window.location.hash || ""
+                if (hash.startsWith("#")) {
+                    hash = hash.slice(1)
+                }
+                return hash
+            }
+
+            let routedPage = normalizeHash();
+            let routedPageId = "page-" + routedPage;
+            let routedPageEl = document.getElementById(routedPageId);
+
+            if (state[routedPage].login)
+                signin()
+            else
+                routedPageEl && routedPageEl.classList.add("router-page-active");
+
+            sidebarReal.innerHTML = sidebarTpl.innerHTML;
+            sidebarReal.querySelectorAll("a[data-state-bind]").forEach(a => {
+                const stateKey = a.getAttribute("data-state-bind");
+                const stateValue = state[stateKey];
+                console.log(stateKey, stateValue);
+
+                if (stateKey == routedPage)
+                    a.classList.add("active");
+                else
+                    a.classList.remove("active");
+
+                if (stateValue.trimaProcedure) {
+                    let procEl = a.querySelector(".sidebar-trima-procedure")
+                    procEl.classList.forEach(cls => {
+                        console.log(cls)
+                        if (cls.startsWith("trima-procedure-"))
+                            procEl.classList.remove(cls);
+                    })
+                    let classToUse = stateValue.trimaProcedure;
+                    console.log(stateKey, routedPage)
+                    if ((stateKey == routedPage)) {
+                        if (!routedPageEl)
+                            classToUse = "questionable"
+                        else
+                            classToUse = stateValue.login ? "invalid" : "optimal"
+                    }
+                    procEl.classList.add("trima-procedure-" + classToUse);
+                    procEl.parentNode.classList.add("trima-procedure-hidden")
+                }
+
+
+                if (stateKey == routedPage) {
+                    if (stateValue.login)
+                        signin()
+                } else {
+                    document.getElementById("page-" + stateKey).classList.remove("router-page-active")
+                }
+
+                if (stateValue.page) {
+                    a.setAttribute("href", "#" + stateValue.page);
+                } else {
+                    a.setAttribute("href", "#not-found")
+                }
+            })
+
+
+        }
+        window.updateSidebarState = function (updateFn) {
+            state = updateFn(state);
+            renderSidebar(state);
+        }
+        window.addEventListener('hashchange', renderSidebar)
+        renderSidebar();
+    })
+
+</script>
+<style>
+    .router-page {
+        display: none;
+    }
+
+    .router-page-active {
+        display: block;
+    }
+</style>

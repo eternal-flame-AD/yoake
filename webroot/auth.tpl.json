@@ -1,0 +1,10 @@
+{{ $method := .Request.Method }}
+{{ if eq $method "POST" }}
+    {{ if not ($err := (auth_login .C)) }} 
+        { "status": "success", "message": "Login successful", "success": true }
+    {{ end }}
+{{ else if eq $method "DELETE" }}
+    {{ void (auth_login .C) }}
+{{ else if eq $method "GET" }}
+{{  (get_auth .C) | json }}
+{{ end }}

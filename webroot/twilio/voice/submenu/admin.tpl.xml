@@ -1,0 +1,5 @@
+{{ template "/twilio/head.tpl.xml" . }}
+{{ $session := (get .Global "twilio_session") }}
+<Response>
+    
+</Response>

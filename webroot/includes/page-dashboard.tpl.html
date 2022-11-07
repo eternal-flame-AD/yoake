@@ -1,0 +1,104 @@
+{{ $auth := (get_auth .C) }}
+<h1 class="page-header">Dashboard</h1>
+<hr>
+<main>
+    <div class="container">
+        <div class="row p-2">
+            <div class="col">
+                <div class="card border">
+                    <div class="card-header">Quote</div>
+                    <div class="card-body">
+                        <blockquote class="blockquote text-center">
+                            <p>
+                                夜明け前が一番暗い
+                            </p>
+                            <p>
+                                The night is darkest just before the dawn.
+                            </p>
+
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row p-2">
+            <div class="col">
+                <div class="card border">
+                    <div class="card-header">Time</div>
+                    <div class="card-body text-center">
+                        <div id="clock" class="h5"></div>
+                        <script>
+                            (function () {
+                                "use struct";
+                                const dateInZone = (zone) => {
+                                    if (zone)
+                                        return new Date(new Date().toLocaleString("en-US", { timeZone: zone }));
+                                    return new Date()
+                                }
+                                const timeInZone = (zone) => {
+                                    const date = dateInZone(zone);
+                                    var h = date.getHours(); // 0 - 23
+                                    var m = date.getMinutes(); // 0 - 59
+                                    var s = date.getSeconds(); // 0 - 59
+
+                                    h = (h < 10) ? "0" + h : h;
+                                    m = (m < 10) ? "0" + m : m;
+                                    s = (s < 10) ? "0" + s : s;
+                                    return `
+                                    <p class="${zone ? "fs-3" : "h2"}">
+                                        ${zone ? '<small class="fw-lighter">' + zone + '</small><br>' : ""}
+                                            <span class="fw-bolder" > ${h}:${m}:${s} <span>
+                                            </p>${zone ? "" : "<hr>"}
+                                    `
+                                }
+                                const zones = ["", "America/Los_Angeles", "America/New_York",
+                                    "Asia/Tokyo", "Asia/Shanghai", "UTC"]
+                                let update = () => {
+                                    var date = new Date();
+
+                                    var time = ""
+                                    zones.forEach((zone) => {
+                                        time += timeInZone(zone) + "\n";
+                                    });
+                                    document.getElementById("clock").innerHTML = time;
+                                }
+                                update();
+                                setInterval(update, 1000);
+                            })()
+
+                        </script>
+                        <style>
+                        </style>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border">
+                    <div class="card-header">Operator Info </div>
+                    <div class="card-body text-center">
+
+                        {{ if $auth.Valid }}
+                        {{ if eq (index $auth.Roles 0) "admin" }}
+                        <img class="d-block mx-auto trima-btn-card" src={{ trima_img "ja/btn_vista_operator.gif" "url"
+                            }}>
+                        <p>
+                            You have super powers!
+                        </p>
+                        {{ end }}
+                        <p>Your session expires at {{ $auth.Expire }}</p>
+                        <button class="btn btn-primary" onclick="signout()">Sign Out</button>
+                        {{ else }}
+                        <a onclick="signin()" href="#" aria-hidden="true">
+                            <img class=" mx-auto trima-btn-card" src={{ trima_img "icon_squeeze.gif" "url" }}>
+                        </a>
+                        <p>
+                            You do not have any priviledges. Keep squeezing!
+                        </p>
+                        <button class="btn btn-primary" onclick="signin()">Sign In</button>
+                        {{ end }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>

@@ -1,0 +1,10 @@
+{{ $type := "recording" }}
+{{ if $formType := (invoke "FormValue" .C "type") }}
+{{ $type = $formType }}
+{{ end }}
+{{ $status := (invoke "FormValue" .C "RecordingStatus") }}
+
+{{ if eq $status "completed" }}
+{{ $recUrl := (invoke "FormValue" .C "RecordingUrl") }}
+<h1>Thank you</h1>
+{{ end }}

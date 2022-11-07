@@ -1,0 +1,29 @@
+{{ template "/twilio/head.tpl.xml" . }}
+{{ $session := (get .Global "twilio_session") }}
+{{ $toNumber := "+15122993080" }}
+{{ $fromNumber := get .Global "from" }}
+
+{{ $callerId := $fromNumber }}
+{{ if $v := (invoke "FormValue" .C "connect_to") }}
+    {{ $toNumber = $v }}
+{{ end }}
+
+{{ $record_reason := (invoke "FormValue" .C "record_reason") }}
+
+<Response>
+{{ if $record_reason }}
+    <Say voice="alice" language="en-US">This call may be recorded for {{ $record_reason | xml }}.</Say>
+{{ end }}
+    <Dial
+        action="/twilio/submenu/connect-finish.tpl.xml"
+        callerId="{{ $callerId | xml }}"
+{{ if $record_reason }}
+        record="record-from-answer-dual"
+        recordingStatusCallback="/twilio/voice/recording.html?type=call"
+        recordingStatusCallbackMethod="POST"
+{{ end }}
+        >
+        <Number
+        >{{ $toNumber | xml }}</Number>
+    </Dial>
+</Response>

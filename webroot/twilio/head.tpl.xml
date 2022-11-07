@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+{{ $session := (invoke "Session" . "fs" "twilio-session" "/twilio") }}
+{{ $session | set .Global "twilio_session" }}
+
+{{ set .Global "debugMenu" false }}
+<!-- 
+Loading from:
+{{ if $from := (invoke "FormValue" .C "From")}}
+    {{ $from | xml }}
+    {{ if eq $from "+15122993080" }}
+        {{ set .Global "debugMenu" true }}
+    {{ end }}
+    {{ set .Global "from" $from }}
+{{ else }}
+    unknown
+    {{ set .Global "from" "unknown" }}
+{{ end }}
+
+
+{{ if get .Global "debugMenu" }}
+Debug Info:
+
+Visited:
+{{ $num_visited := 0 }}
+{{ if get $session "num_visited" }}
+    {{ $num_visited = (get $session "num_visited") }}
+{{ end }}
+{{ $num_visited }} times
+
+{{ else }}Debug is off{{ end }}
+
+-->

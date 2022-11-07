@@ -1,0 +1,25 @@
+listen:
+  addr: :10098
+  ssl:
+    use: off
+
+hosts:
+  "vault": vault
+  "": webroot
+
+webroot:
+  sitename: "SITE NAME"
+  root: dist/webroot
+  sessionkey: test
+  log:
+    allrequests: on
+
+upstream:
+  vault:
+     api: "http://vault"
+     ui: "file://dist/webroot/vault-ui"
+
+twilio:
+  accountsid: ACxxxxxxxxxxxxxxxxxx
+  authtoken: "12345"
+  skipverify: off

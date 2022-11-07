@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.tpl.*": "gotmpl",
+        "*.tpl.html": "html",
+    }
+}

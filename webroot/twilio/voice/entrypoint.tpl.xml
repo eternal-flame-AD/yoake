@@ -1,0 +1,9 @@
+{{ template "/twilio/head.tpl.xml" . }}
+{{ $session := (get .Global "twilio_session") }}
+
+{{ $num_visited := (get $session "num_visited") }}
+{{ set $session "num_visited" (math "argv(1) + 1" $num_visited) }}
+<Response>
+    <Say voice="alice" language="en-US">This is Anne!</Say>
+    <Redirect method="POST">/twilio/voice/menu.xml</Redirect>
+</Response>

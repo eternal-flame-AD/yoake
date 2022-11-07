@@ -1,0 +1,20 @@
+{{ $status := (invoke "FormValue" .C "DialCallStatus")}}
+<Response>
+    {{ if eq $status "completed" }}
+        <Hangup/>
+    {{ else if eq $status "failed"}}
+        <Say voice="alice" language="en-US">Sorry, there was an issue routing your call.</Say>
+        <Hangup/>
+    {{ else }}
+        <Say voice="alice" language="en-US">Please leave a message after the beep.</Say>
+        <Record
+            action="/twilio/voice/hangup.xml"
+            method="POST"
+            maxLength="60"
+            recordingStatusCallback="/twilio/voice/recording.html?type=voicemail"
+            recordingStatusCallbackMethod="POST"
+            playBeep="true"
+            />
+    {{ end }}
+
+</Response>

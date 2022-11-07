@@ -1,0 +1,8 @@
+{{ template "/twilio/head.tpl.xml" . }}
+{{ $session := (get .Global "twilio_session") }}
+
+{{ $num_visited := (get $session "num_visited") }}
+<Response>
+    <Say voice="alice" language="en-US">From number is <say-as interpret-as="telephone">{{get .Global "from" | xml}}</say-as></Say>
+    <Say voice="alice" language="en-US">You have called {{ $num_visited }} times.</Say>
+</Response>

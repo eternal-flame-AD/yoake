@@ -1,0 +1,75 @@
+{{ set .Global "Title" "Home" }}
+{{ template "/includes/head.tpl.html" . }}
+<link href="dashboard.css" rel="stylesheet">
+</head>
+
+
+<body>
+
+    {{ template "/includes/navbar.tpl.html" .}}
+
+    <div class="container-fluid">
+
+        {{ template "/includes/modal-login.tpl.html" . }}
+
+        <div class="row">
+
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3 sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#dashboard" data-state-bind="dashboard">
+                                <span class="sidebar-trima-procedure" class="align-text-bottom">
+                                    {{ template "/partials/sidebar-trima-procedure-logos.tpl.html" }}
+                                </span>Dashboard
+                            </a>
+                        </li>
+                    </ul>
+
+                    <h6
+                        class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+                        <span>Twilio</span>
+                        <a class="link-secondary" href="#" aria-label="Add a new report">
+                            <span data-feather="plus-circle" class="align-text-bottom"></span>
+                        </a>
+                    </h6>
+                    <ul class="nav flex-column mb-2">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#twilio" data-state-bind="twilio">
+                                <span class="sidebar-trima-procedure">
+                                    {{ template "/partials/sidebar-trima-procedure-logos.tpl.html" }}
+                                </span>Features
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#twilio-recordings" class="" data-state-bind="twilio-recordings"
+                                data-auth-bind="admin">
+                                <span class="sidebar-trima-procedure">
+                                    {{ template "/partials/sidebar-trima-procedure-logos.tpl.html" }}
+                                </span>Recordings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page router-page-active" id="page-dashboard">
+
+                {{ template "/includes/page-dashboard.tpl.html" . }}
+
+            </main>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-twilio">
+                {{ template "/includes/page-twilio.tpl.html" . }}
+            </main>
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-twilio-recordings">
+                {{ template "/includes/page-twilio-recordings.tpl.html" . }}
+            </main>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-not-found">
+                Not Found
+            </main>
+
+            {{ template "/includes/sidebar-router.tpl.html" . }}
+        </div>
+        {{ template "/includes/tail.tpl.html" . }}

@@ -1,0 +1,14 @@
+[Unit]
+Description=Yoake Server
+
+[Service]
+User=caddy
+SupplementaryGroups=ssl
+WorkingDirectory=/var/lib/caddy/yoake
+ExecStart=/var/lib/caddy/yoake/server
+Restart=always
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
+

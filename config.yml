@@ -1,0 +1,47 @@
+listen:
+  addr: :80
+  ssl:
+    use: off
+    cert: "fullchain.pem"
+    key: "privkey.pem"
+
+hosts:
+  "vault.invalid": vault
+  "root.invalid": webroot
+
+auth:
+  validminutes: 1440
+  method:
+    userpass:
+    
+    yubikey:
+      clientid: "12345"
+      clientkey: "xxxxx"
+      keys:
+        - 
+          name: keyname
+          publicid: vvxxxxxxxxxxxxx
+          role: admin
+
+webroot: 
+  sitename: "夜明け"
+  root: dist
+  sessionkey: should_be_random
+  secure:
+    hsts_max_age: 0
+  log:
+    indent: off
+    filter:
+      - "!(status_404)"
+      - "(status_4xx)"
+      - "(status_5xx)"
+      - "!(static)"
+
+upstream:
+  vault:
+     api: "http://vault.invalid"
+     ui: "file:///dist/vault-ui"
+
+twilio:
+  accountsid: ACxxxxx
+  authtoken: xxxxxx

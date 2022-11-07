@@ -1,0 +1,81 @@
+<div class="modal" id="login-modal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true"
+    data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginModalLabel">Login</h5>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+                    <ul class="nav nav-tabs" id="loginTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="btn btn-primary active" data-bs-toggle="tab"
+                                data-bs-target="#login-tab-userpass" type="button" role="tab" aria-controls="userpass"
+                                aria-selected="true" id="login-tab-label-userpass">UserPass</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="btn btn-link" data-bs-toggle="tab" data-bs-target="#login-tab-yubikey"
+                                type="button" role="tab" aria-controls="yubikey" aria-selected="false"
+                                id="login-tab-label-yubikey">Yubikey</button>
+                        <li class="nav-item" role="presentation"></li>
+                    </ul>
+
+                    <hr />
+
+                    <div class="alert alert-danger d-none align-items-center" role="alert" id="login-form-error">
+                        <img src={{ trima_img "ja/btn_stop.gif" "url" }} style="height: 4em" class="d-block">
+                        <hr>
+                        <span>An error occured.</span>
+                    </div>
+
+                    <div class="tab-content" id="loginTabContents">
+                        <div class="tab-pane show active" id="login-tab-userpass"
+                            aria-labelledby="login-tab-label-userpass">
+                            <form action="/auth.json" onsubmit="submitLoginForm(this,event)">
+                                <input type="hidden" name="type" value="userpass">
+                                <div class="mb-2">
+                                    <label for="username">Username</label>
+                                    <input type="text" class="form-control" id="username" placeholder="Username">
+                                </div>
+
+                                <div class="mb-2">
+                                    <label for="password">Password</label>
+                                    <input type="password" class="form-control" id="password" placeholder="Password">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane" id="login-tab-yubikey" aria-labelledby="login-tab-label-yubikey">
+                            <form action="/auth.json" onsubmit="submitLoginForm(this,event)">
+                                <input type="hidden" name="type" value="yubikey">
+                                <div class="mb-1">
+                                    <label for="username">OTP Response</label>
+                                    <input type="text" class="form-control" name="response" placeholder="OTP Response">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="history.back()"
+                    data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="
+                    let form = $('#login-modal div.tab-pane.active form');
+                    form.submit();
+                ">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tabEl =>
+        tabEl.addEventListener('shown.bs.tab', function (event) {
+            let newTab = event.target
+            let oldTab = event.relatedTarget
+            console.log(newTab, oldTab)
+            newTab.classList.add('btn-primary')
+            newTab.classList.remove('btn-link')
+            oldTab.classList.remove('btn-primary')
+            oldTab.classList.add('btn-link')
+        }))
+</script>
