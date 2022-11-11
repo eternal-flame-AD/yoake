@@ -36,6 +36,7 @@ type C struct {
 		AccountSid string
 		AuthToken  string
 		SkipVerify bool
+		BaseURL    string
 	}
 	Auth struct {
 		ValidMinutes int

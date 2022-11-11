@@ -13,9 +13,22 @@ import (
 const AuthSessionName = "auth_session"
 
 type RequestAuth struct {
-	Valid  bool
-	Roles  []string
-	Expire time.Time
+	Present bool
+	Valid   bool
+	Roles   []string
+	Expire  time.Time
+}
+
+func (a RequestAuth) HasRole(role Role) bool {
+	if !a.Valid {
+		return false
+	}
+	for _, r := range a.Roles {
+		if r == string(role) {
+			return true
+		}
+	}
+	return false
 }
 
 func Middleware(store sessions.Store) echo.MiddlewareFunc {
@@ -31,6 +44,7 @@ func Middleware(store sessions.Store) echo.MiddlewareFunc {
 
 			var auth RequestAuth
 			if expireTs, ok := sess.Values["expire"].(string); ok {
+				auth.Present = true
 				if expireTime, err := time.Parse(time.RFC3339, expireTs); err != nil {
 					log.Printf("invalid expireTime: %v", expireTs)
 				} else {
@@ -116,5 +130,9 @@ func Login(c echo.Context) (err error) {
 
 }
 func GetRequestAuth(c echo.Context) RequestAuth {
-	return c.Get("auth_" + AuthSessionName).(RequestAuth)
+	if a, ok := c.Get("auth_" + AuthSessionName).(RequestAuth); ok {
+		return a
+	} else {
+		return RequestAuth{Present: false, Valid: false}
+	}
 }

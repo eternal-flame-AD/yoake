@@ -60,6 +60,9 @@ func Invoke(name string, target reflect.Value, args ...reflect.Value) (any, erro
 		}
 		target = reflect.ValueOf(t)
 	}
+	for i, arg := range args {
+		log.Printf("invoke %s arg[%d]=%v", name, i, arg)
+	}
 	ret := target.Call(args)
 	if len(ret) == 0 {
 		return nil, nil
@@ -67,6 +70,9 @@ func Invoke(name string, target reflect.Value, args ...reflect.Value) (any, erro
 
 	if err, ok := ret[len(ret)-1].Interface().(error); ok && err != nil {
 		return nil, err
+	}
+	for i, r := range ret {
+		log.Printf("invoke %s ret[%d]=%v", name, i, r)
 	}
 
 	switch len(ret) {

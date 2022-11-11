@@ -1,0 +1,6 @@
+{{ template "/twilio/head.tpl.xml" . }}
+{{ $session := (get .Global "twilio_session") }}
+
+<Response>
+<Message>Hello! This is yumechi.</Message>
+</Response>

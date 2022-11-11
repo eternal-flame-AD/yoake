@@ -66,8 +66,8 @@ func Init(hostname string) {
 		}
 	},
 		middleware.Gzip(),
-		logMiddleware("twilio", twilio.VerifyMiddleware("/twilio")),
 		auth.Middleware(sessionCookie),
+		logMiddleware("twilio", twilio.VerifyMiddleware("/twilio", config.Config().Twilio.BaseURL)),
 		middleware.Rewrite(map[string]string{"*/": "$1/index.html"}),
 		logMiddleware("template", servetpl.ServeTemplateDir(webroot.Root)),
 		logMiddleware("static", middleware.Static(webroot.Root)))

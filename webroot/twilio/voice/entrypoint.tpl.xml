@@ -2,6 +2,7 @@
 {{ $session := (get .Global "twilio_session") }}
 
 {{ $num_visited := (get $session "num_visited") }}
+{{ if not $num_visited }}{{ $num_visited = 0 }} {{ end }}
 {{ set $session "num_visited" (math "argv(1) + 1" $num_visited) }}
 <Response>
     <Say voice="alice" language="en-US">This is Anne!</Say>

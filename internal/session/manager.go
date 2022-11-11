@@ -1,6 +1,8 @@
 package session
 
 import (
+	"log"
+
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 )
@@ -28,8 +30,10 @@ func ManagedSession(c echo.Context) (p Provider, close func()) {
 			checkedOutSessions[name] = s
 			return s.Values
 		}, func() {
-			for _, s := range checkedOutSessions {
-				s.Save(c.Request(), c.Response())
+			for name, s := range checkedOutSessions {
+				if err := s.Save(c.Request(), c.Response()); err != nil {
+					log.Printf("error saving session %s: %v", name, err)
+				}
 			}
 		}
 }

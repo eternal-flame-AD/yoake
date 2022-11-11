@@ -127,8 +127,8 @@ var (
 		LogError:         true,
 		LogContentLength: true,
 		LogResponseSize:  true,
-		LogHeaders:       []string{},
+		LogHeaders:       []string{"Content-Type"},
 		LogQueryParams:   []string{},
-		LogFormValues:    []string{},
+		LogFormValues:    []string{"From", "To"},
 	}
 )

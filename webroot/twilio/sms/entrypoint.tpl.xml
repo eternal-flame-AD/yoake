@@ -1,0 +1,5 @@
+{{ template "/twilio/head.tpl.xml" . }}
+{{ $session := (get .Global "twilio_session") }}
+<Response>
+    <Redirect method="POST">/twilio/sms/menu.xml</Redirect>
+</Response>
