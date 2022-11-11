@@ -1,4 +1,3 @@
-{{ set .Global "Title" "Home" }}
 {{ template "/includes/head.tpl.html" . }}
 <link href="dashboard.css" rel="stylesheet">
 </head>
@@ -7,7 +6,6 @@
 <body>
 
     {{ template "/includes/navbar.tpl.html" .}}
-
     <div class="container-fluid">
 
         {{ template "/includes/modal-login.tpl.html" . }}
@@ -26,10 +24,11 @@
                         </li>
                     </ul>
 
+                    <!--
                     <h6
                         class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
                         <span>Twilio</span>
-                        <a class="link-secondary" href="#" aria-label="Add a new report">
+                        <a class="link-secondary" href="#" aria-label="Twilio">
                             <span data-feather="plus-circle" class="align-text-bottom"></span>
                         </a>
                     </h6>
@@ -50,23 +49,116 @@
                             </a>
                         </li>
                     </ul>
+                    -->
+
+
+                    <h6
+                        class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+                        <span>Entertainment</span>
+                        <a class="link-secondary" href="#" aria-label="Entertainment">
+                            <span data-feather="plus-circle" class="align-text-bottom"></span>
+                        </a>
+                    </h6>
+                    <ul class="nav flex-column mb-2">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#entertainment-youtube" data-state-bind="entertainment-youtube">
+                                <span class="sidebar-trima-procedure">
+                                    {{ template "/partials/sidebar-trima-procedure-logos.tpl.html" }}
+                                </span>Youtube Playlist
+                            </a>
+                        </li>
+                    </ul>
+
+                    <h6
+                        class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+                        <span>Canvas LMS</span>
+                        <a class="link-secondary" href="#" aria-label="Canvas LMS">
+                            <span data-feather="plus-circle" class="align-text-bottom"></span>
+                        </a>
+                    </h6>
+                    <ul class="nav flex-column mb-2">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#canvas-grades" data-state-bind="canvas-grades"
+                                data-auth-bind="admin">
+                                <span class="sidebar-trima-procedure">
+                                    {{ template "/partials/sidebar-trima-procedure-logos.tpl.html" }}
+                                </span>Grades
+                            </a>
+                        </li>
+                    </ul>
+
+
+                    <h6
+                        class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+                        <span>Gotify</span>
+                        <a class="link-secondary" href="#" aria-label="Gotify">
+                            <span data-feather="plus-circle" class="align-text-bottom"></span>
+                        </a>
+                    </h6>
+                    <ul class="nav flex-column mb-2">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#gotify-ui" data-state-bind="gotify-ui">
+                                <span class="sidebar-trima-procedure">
+                                    {{ template "/partials/sidebar-trima-procedure-logos.tpl.html" }}
+                                </span>Gotify UI
+                            </a>
+                        </li>
+                    </ul>
+
+                    <h6
+                        class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+                        <span>Vault</span>
+                        <a class="link-secondary" href="#" aria-label="Vault">
+                            <span data-feather="plus-circle" class="align-text-bottom"></span>
+                        </a>
+                    </h6>
+                    <ul class="nav flex-column mb-2">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#vault-ui" data-state-bind="vault-ui">
+                                <span class="sidebar-trima-procedure">
+                                    {{ template "/partials/sidebar-trima-procedure-logos.tpl.html" }}
+                                </span>Vault UI
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </nav>
 
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page router-page-active" id="page-dashboard">
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page router-page-active" id="page-dashboard"
+                data-title="Dashboard">
 
                 {{ template "/includes/page-dashboard.tpl.html" . }}
 
             </main>
 
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-twilio">
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-twilio" data-title="Twilio">
                 {{ template "/includes/page-twilio.tpl.html" . }}
             </main>
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-twilio-recordings">
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-twilio-recordings"
+                data-title="Twilio Recordings">
                 {{ template "/includes/page-twilio-recordings.tpl.html" . }}
             </main>
 
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-not-found">
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-entertainment-youtube"
+                data-title="Youtube Playlist">
+                {{ template "/includes/page-entertainment-youtube.tpl.html" . }}
+            </main>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-canvas-grades"
+                data-title="Canvas Grades">
+                {{ template "/includes/page-canvas-grades.tpl.html" . }}
+            </main>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-gotify-ui" data-title="Gotify">
+                {{ template "/includes/page-gotify-ui.tpl.html" . }}
+            </main>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-vault-ui" data-title="Vault">
+                {{ template "/includes/page-vault-ui.tpl.html" . }}
+            </main>
+
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 router-page" id="page-not-found" data-title="Not Found">
                 Not Found
             </main>
 

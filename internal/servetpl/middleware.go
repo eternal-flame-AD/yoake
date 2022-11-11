@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io"
 	"log"
+	"mime"
 	"net/http"
 	"os"
 	"path"
@@ -107,11 +108,11 @@ func ServeTemplateDir(dir string) echo.MiddlewareFunc {
 		log.Printf("parsing template: %s", file.Name)
 
 		if path.Ext(file.File) == ".html" {
-			if _, err := parseTemplateFileAs[template.FuncMap](templates, file.Name, file.File); err != nil {
+			if _, err := ParseTemplateFileAs[template.FuncMap](templates, file.Name, file.File); err != nil {
 				log.Panicf("templates failed to parse: %s", err)
 			}
 		} else {
-			if _, err := parseTemplateFileAs[textTemplate.FuncMap](textTemplates, file.Name, file.File); err != nil {
+			if _, err := ParseTemplateFileAs[textTemplate.FuncMap](textTemplates, file.Name, file.File); err != nil {
 				log.Panicf("templates failed to parse: %s", err)
 			}
 		}
@@ -147,6 +148,8 @@ func ServeTemplateDir(dir string) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			req, resp := c.Request(), c.Response()
 			p := path.Clean("/" + req.URL.Path)
+			ext := path.Ext(p)
+			c.Response().Header().Set(echo.HeaderContentType, mime.TypeByExtension(ext))
 
 			body := &bodyBuffer{resp: resp}
 			defer body.WriteHeader()

@@ -1,5 +1,4 @@
-<nav id="sidebar-tpl" class="d-none">
-
+<nav id="sidebar-tpl" class="d-none" aria-hidden="true">
 </nav>
 <script>
     getAuth().then(auth => {
@@ -50,8 +49,23 @@
 
             if (state[routedPage].login)
                 signin()
-            else
-                routedPageEl && routedPageEl.classList.add("router-page-active");
+            else {
+                const event = new CustomEvent('sidebar-activate', {
+                    detail: {
+                        page: routedPage,
+                        pageId: routedPageId,
+                        pageEl: routedPageEl,
+                    }
+                })
+                if (routedPageEl) {
+                    routedPageEl.classList.add("router-page-active");
+                    routedPageEl.setAttribute("aria-hidden", "false");
+                    if (routedPageEl.getAttribute("data-title")) {
+                        document.title = document.title.replace(/.+?(?=\|.+$)/, routedPageEl.getAttribute("data-title") + " ") || routedPageEl.getAttribute("data-title");
+                    }
+                }
+                document.dispatchEvent(event);
+            }
 
             sidebarReal.innerHTML = sidebarTpl.innerHTML;
             sidebarReal.querySelectorAll("a[data-state-bind]").forEach(a => {
@@ -72,7 +86,6 @@
                             procEl.classList.remove(cls);
                     })
                     let classToUse = stateValue.trimaProcedure;
-                    console.log(stateKey, routedPage)
                     if ((stateKey == routedPage)) {
                         if (!routedPageEl)
                             classToUse = "questionable"
@@ -88,7 +101,9 @@
                     if (stateValue.login)
                         signin()
                 } else {
-                    document.getElementById("page-" + stateKey).classList.remove("router-page-active")
+                    let pageEl = document.getElementById("page-" + stateKey);
+                    pageEl.classList.remove("router-page-active")
+                    pageEl.setAttribute("aria-hidden", "true");
                 }
 
                 if (stateValue.page) {
@@ -105,7 +120,12 @@
             renderSidebar(state);
         }
         window.addEventListener('hashchange', renderSidebar)
+
+        document.addEventListener("sidebar-activate", e => {
+            console.log("sidebar-activate", e.detail)
+        })
         renderSidebar();
+
     })
 
 </script>

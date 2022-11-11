@@ -3,3 +3,4 @@ install.sh
 *.pid
 config-*.yml
 !config-test.yml
+data

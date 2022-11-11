@@ -1,0 +1,191 @@
+{{ $auth := (get_auth .C) }}
+<h1 class="page-header">Canvas Gradings</h1>
+<div>
+    <input type="button" class="btn btn-primary" id="canvas-grading-refresh-btn" value="Refresh"
+        onclick="updateConvasGradingTable(1);">
+    Last refresh: <span id="canvas-grading-last-refresh">never</span>
+</div>
+<div class="table-responsive">
+
+    <table class="table" id="canvas-grading-table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Assignment</th>
+                <th scope="col">Name</th>
+                <th scope="col">Due</th>
+                <th scope="col">Grade</th>
+                <th scope="col">Graded At</th>
+                <th scope="col">Posted At</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row" class="placeholder">Loading...</th>
+                <td class="placeholder"></td>
+                <td class="placeholder"></td>
+                <td class="placeholder"></td>
+                <td class="placeholder"></td>
+                <td class="placeholder"></td>
+                <td class="placeholder"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{{ if $auth.Valid }}
+<script>
+    (() => {
+        "use strict";
+        let last_refresh = dayjs(0);
+        setInterval(() => {
+            document.querySelector('#canvas-grading-last-refresh').innerText = last_refresh.fromNow();
+        }, 2000);
+
+        window.updateConvasGradingTable = function (force) {
+            let refreshBtn = document.getElementById('canvas-grading-refresh-btn');
+            refreshBtn.disabled = true;
+            refreshBtn.value = 'Refreshing...';
+
+            const newColumn = (ele, ...classList) => {
+                const td = document.createElement('td');
+                td.classList.add(...classList);
+                if (ele instanceof HTMLElement) {
+                    td.appendChild(ele);
+                } else {
+                    let p = document.createElement('p');
+                    p.innerText = ele;
+                    td.appendChild(p);
+                }
+
+                return td;
+            };
+            const relativeTimeTag = (tag, time) => {
+                if (!(tag instanceof HTMLElement)) {
+                    tag = document.createElement(tag);
+                }
+                time = dayjs(time);
+                if (time.isValid()) {
+                    tag.innerText = time.fromNow();
+                    tag.setAttribute("data-bs-toggle", "tooltip");
+                    tag.setAttribute("data-bs-title", time.format("L LT"));
+                    new bootstrap.Tooltip(tag);
+                }
+                else {
+                    tag.innerText = "N/A";
+                }
+                return tag;
+            };
+            $.ajax({
+                method: "GET",
+                url: "/api/canvas/grades" + (force ? "?refresh=1" : ""),
+                dataType: "json",
+                success: function (data) {
+                    refreshBtn.disabled = false;
+                    refreshBtn.value = 'Refresh';
+
+                    let tbody = document.querySelector('#canvas-grading-table tbody');
+                    let newRows = [];
+                    last_refresh = dayjs(data.last_refresh);
+                    document.querySelector('#canvas-grading-last-refresh').innerText = last_refresh.fromNow();
+
+                    for (const [index, grade] of data.grades.entries()) {
+                        let row = document.createElement("tr");
+
+                        {
+                            row.appendChild(newColumn(index + 1));
+                        }
+
+                        {
+                            let assignmentLink = document.createElement("a");
+                            assignmentLink.href = grade.AssignmentURL;
+                            assignmentLink.innerText = grade.Name;
+
+                            let courseCode = document.createElement("a");
+                            courseCode.href = "https://utexas.instructure.com/courses/" + grade.CourseLegacyID;
+                            courseCode.innerText = grade.CourseCode.replace(/\s*\(.*\)/, "");
+                            courseCode.setAttribute("data-bs-toggle", "tooltip");
+                            courseCode.setAttribute("data-bs-title", grade.CourseCode + " - " + grade.CourseName);
+                            new bootstrap.Tooltip(courseCode);
+
+                            let assignment = document.createElement("p");
+                            assignment.appendChild(courseCode);
+                            assignment.appendChild(document.createTextNode(" - "));
+                            assignment.appendChild(assignmentLink);
+
+                            row.appendChild(newColumn(assignment));
+                        }
+
+
+                        row.appendChild(newColumn(grade.SubmissionUserName));
+
+                        {
+                            if (grade.Due == "-") {
+                                row.appendChild(newColumn("No Due"));
+                            } else {
+                                let dueTd = relativeTimeTag("p", grade.Due);
+                                row.appendChild(newColumn(dueTd));
+                            }
+                        }
+
+                        {
+                            let gradeEle = document.createElement("p");
+                            let gradeTdClass = "";
+                            if (grade.GradeHidden) {
+                                gradeEle.innerText = "(Hidden)";
+                                gradeTdClass = "table-secondary";
+                            } else {
+                                if (grade.Score < 0) {
+                                    gradeEle.innerText = "(Not Graded)";
+                                    gradeTdClass = "table-light";
+                                } else {
+                                    const calculatedPercentage = grade.Score / grade.PossiblePoints * 100;
+                                    if (!calculatedPercentage || calculatedPercentage < 50) {
+                                        gradeTdClass = "table-danger";
+                                    } else if (calculatedPercentage < 80) {
+                                        gradeTdClass = "table-warning";
+                                    } else if (calculatedPercentage < 95) {
+                                        gradeTdClass = "table-info";
+                                    } else {
+                                        gradeTdClass = "table-success";
+                                    }
+
+                                    gradeEle.innerText = `${grade.Score.toFixed(2)} (${grade.Grade})/` +
+                                        `${grade.PossiblePoints.toFixed(2)}`;
+                                    if (grade.State != "graded") {
+                                        let sub = document.createElement("sub");
+                                        sub.innerText = `(${grade.State.replace(/_/g, " ")})`;
+                                        gradeEle.appendChild(sub);
+                                    }
+                                }
+                            }
+
+                            row.appendChild(newColumn(gradeEle, gradeTdClass));
+                        }
+
+                        row.appendChild(newColumn(relativeTimeTag("p", grade.GradedAt)));
+                        row.appendChild(newColumn(relativeTimeTag("p", grade.PostedAt)));
+                        newRows.push(row);
+                    }
+                    tbody.replaceChildren(...newRows);
+
+                    console.log(data);
+                },
+                error: function (err) {
+                    refreshBtn.disabled = false;
+                    refreshBtn.value = 'Refresh';
+                }
+            })
+        }
+
+        let updateTimer;
+        document.addEventListener("sidebar-activate", e => {
+            if (e.detail.page == "canvas-grades") {
+                updateConvasGradingTable();
+                updateTimer = setInterval(updateConvasGradingTable, 10000);
+            } else {
+                clearInterval(updateTimer);
+            }
+        })
+    })()
+</script>
+{{ end }}

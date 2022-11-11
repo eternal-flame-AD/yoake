@@ -15,12 +15,10 @@ sudo systemctl daemon-reload
 
 sudo systemctl stop yoake-server.service
 
-if [ -f ~caddy/yoake ]
-    sudo rm -rf ~caddy/yoake/*
-        or exit 2
-end 
+sudo find ~caddy/yoake -mindepth 1 -delete
+    or exit 2
 
-sudo mkdir -p ~caddy/yoake
+sudo -ucaddy mkdir -p ~caddy/yoake
     or exit 2
 
 sudo -ucaddy make INSTALLDEST=(echo ~caddy/yoake) install

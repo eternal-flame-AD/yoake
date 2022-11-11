@@ -23,6 +23,21 @@ auth:
           publicid: vvxxxxxxxxxxxxx
           role: admin
 
+comm:
+  gotify:
+    baseurl: https://gotify.example.com/
+    apptoken: Axxxxx
+  email:
+    testmode: off
+    smtp:
+        from: "me@example.com"
+        to: "me@example.com" 
+        host: "smtp.example.com"
+        port: "587"
+        username: "me@example.com"
+        password: "xxxx"
+        defaultsubject: "Hi!"
+
 webroot: 
   sitename: "夜明け"
   root: dist

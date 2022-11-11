@@ -1,5 +1,5 @@
 async function getAuth() {
-    let body = await fetch("/auth.json?" + new Date(), { method: "GET" })
+    let body = await fetch("/api/auth/auth.json?" + new Date(), { method: "GET" })
     let bodyJSON = await body.json()
     return bodyJSON
 }
@@ -36,7 +36,7 @@ function signin() {
 function signout() {
     $.ajax({
         type: 'DELETE',
-        url: '/auth.json',
+        url: '/api/auth/login',
         success: function (data) {
             window.location.reload();
         },

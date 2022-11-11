@@ -14,8 +14,8 @@ func yubiAuthLazyInit() {
 		return
 	}
 	conf := config.Config()
-	if conf.Auth.Method.Yubikey.ClientId != "" {
-		if a, err := yubigo.NewYubiAuth(conf.Auth.Method.Yubikey.ClientId, conf.Auth.Method.Yubikey.ClientKey); err != nil {
+	if conf.Auth.Yubikey.ClientId != "" {
+		if a, err := yubigo.NewYubiAuth(conf.Auth.Yubikey.ClientId, conf.Auth.Yubikey.ClientKey); err != nil {
 			log.Panicf("failed to load yubigo: %v", err)
 		} else {
 			yubiAuth = a

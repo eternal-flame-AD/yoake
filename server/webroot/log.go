@@ -101,11 +101,14 @@ func logMiddleware(category string, backend echo.MiddlewareFunc) echo.Middleware
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			logSetRequestCategory(c, category)
-			wrappedNext := func(c echo.Context) error {
-				logRemoveRequestCategory(c, category)
-				return next(c)
+			if backend != nil {
+				wrappedNext := func(c echo.Context) error {
+					logRemoveRequestCategory(c, category)
+					return next(c)
+				}
+				return backend(wrappedNext)(c)
 			}
-			return backend(wrappedNext)(c)
+			return next(c)
 		}
 	}
 }

@@ -15,6 +15,9 @@ type C struct {
 			Key  string
 		}
 	}
+	DB struct {
+		Badger DBBadger
+	}
 	WebRoot struct {
 		SiteName   string
 		Root       string
@@ -38,20 +41,21 @@ type C struct {
 		SkipVerify bool
 		BaseURL    string
 	}
-	Auth struct {
+	Comm      Communication
+	CanvasLMS CanvasLMS
+	Auth      struct {
 		ValidMinutes int
-		Method       struct {
-			UserPass struct {
-			}
-			Yubikey struct {
-				ClientId  string
-				ClientKey string
-				Keys      []struct {
-					Name     string
-					PublicId string
-					Role     string
-				}
-			}
+		DevMode      struct {
+			GrantAll bool
+		}
+		Users map[string]struct {
+			Password    string
+			PublicKeyId []string
+			Roles       []string
+		}
+		Yubikey struct {
+			ClientId  string
+			ClientKey string
 		}
 	}
 }

@@ -9,6 +9,9 @@ ifeq ($(INSTALLDEST),)
 INSTALLDEST := /opt/${PROJECT_NAME}
 endif
 
+VERSION := $(shell git describe --tags --exact HEAD || printf "%s" $(shell git rev-parse --short HEAD))
+BUILDDATE := $(shell date -Iminutes)
+
 install:
 	mkdir -p $(INSTALLDEST)
 	cp -r dist/* $(INSTALLDEST)
@@ -25,6 +28,8 @@ dev:
 	done
 
 webroot: $(wildcard webroot/**) FORCE
+	mkdir -p dist
+	cp -r assets dist
 	cp -r webroot dist
 	(cd dist/webroot; ../../scripts/webroot-build.fish)
 
@@ -37,7 +42,10 @@ clean:
 	rm -rf dist
 
 dist/%: ${CMD_DIR}/% FORCE
-	go build -o $@ ${MODULE_PATH}/$<
+	go build \
+		-ldflags "-X ${MODULE_PATH}/internal/version.Version=$(VERSION) 	\
+				  -X ${MODULE_PATH}/internal/version.BuildDate=$(BUILDDATE)" \
+		-o $@ ${MODULE_PATH}/$<
 
 .PHONY: build clean
 FORCE:

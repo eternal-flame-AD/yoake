@@ -9,7 +9,7 @@ import (
 	"github.com/eternal-flame-AD/yoake/internal/servetpl/funcmap"
 )
 
-func parseTemplateFileAs[M interface{ ~map[string]any }, T interface {
+func ParseTemplateFileAs[M interface{ ~map[string]any }, T interface {
 	*template.Template | *textTemplate.Template
 	Parse(string) (T, error)
 	New(name string) T

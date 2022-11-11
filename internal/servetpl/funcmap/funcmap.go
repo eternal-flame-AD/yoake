@@ -109,6 +109,10 @@ func GetFuncMap() map[string]interface{} {
 		"parse_json":      ParseJSON,
 		"json":            MarshalJSON,
 		"get_auth":        AuthGet,
-		"auth_login":      AuthLogin,
+		"sprintf": func(format string, input ...interface{}) interface{} {
+			return fmt.Sprintf(format, input...)
+		},
+		"http":    HttpRequest,
+		"version": Version,
 	}
 }

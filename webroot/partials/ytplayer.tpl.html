@@ -1,0 +1,22 @@
+<div class="ratio ratio-16x9">
+    <iframe id="ytplayer" title="YouTube video" allowfullscreen></iframe>
+</div>
+<script>
+    window.openYtPlayer = function (videoId, options) {
+        const defaultOptions = {
+            rel: 0,
+            autoplay: 1,
+        }
+        options = Object.assign(defaultOptions, options);
+        let player = document.getElementById('ytplayer');
+        let src = "https://www.youtube.com/embed/" + encodeURI(videoId) + `?rel=${options.rel}&autoplay=${options.autoplay}`;
+        if (options.playlist) {
+            if (options.playlist instanceof Array) {
+                options.playlist = options.playlist.join(',');
+            }
+            if (options.playlistet)
+                src += `&playlist=${encodeURIComponent(options.playlist)}`;
+        }
+        player.src = src;
+    };
+</script>

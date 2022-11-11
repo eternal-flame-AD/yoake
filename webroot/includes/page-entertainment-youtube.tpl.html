@@ -1,0 +1,430 @@
+<h1 class="page-header">Youtube Playlist</h1>
+
+{{ $auth := (get_auth .C) }}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <form class="g-3" id="entertainment-youtube-filter-form" onsubmit="">
+                <div class="mb-3">
+                    <label class="form-label">
+                        What type of content do you like?
+                    </label>
+                </div>
+                <div class="mb-3" class="filter-category" id="entertainment-youtube-filter-form-categories">
+
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" value="">
+                        <label class="form-check-label">
+                            ExampleCategory
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label>Tags:</label>
+                </div>
+                <div class="mb-3" id="entertainment-youtube-filter-form-tags">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" checked>
+                        <label class="form-check-label" for="flexCheckChecked">
+                            ExampleTag1
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label>I found <span name="result-count">0</span> videos based on this filter, Enjoy!</label>
+                </div>
+                <textbox hidden name="filter-results">
+
+                </textbox>
+                <div class="mb-3">
+                    <input type="button" class="btn btn-primary" value="Watch All" name="watch-all">
+                </div>
+            </form>
+        </div>
+        <div class="col">
+            {{ template "/partials/ytplayer.tpl.html" . }}
+
+            {{ if $auth.Valid }}
+            {{ if eq (index $auth.Roles 0) "admin" }}
+            <details>
+                <summary>Manage</summary>
+                <form id="entertainment-youtube-edit-form">
+                    <div class="row g-3">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Category</span>
+                            <div class="input-group-text">
+                                <input class="form-check-input mt-0" type="checkbox" name="category-use-existing"
+                                    aria-label="Use Selected Category" checked>
+                            </div>
+                            <input type="text" class="form-control" aria-label="Category ID" name="category-id"
+                                disabled>
+                            <input type="text" class="form-control" aria-label="Category Name" name="category-name">
+                            <input type="button" class="btn btn-danger" value="DELETE"
+                                onclick="window.submitYoutubeEditForm('category', 'DELETE')">
+                            <input type="button" class="btn btn-warning" value="POST"
+                                onclick="window.submitYoutubeEditForm('category')">
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Tag</span>
+                            <select class="form-select" name="tag-select">
+                            </select>
+                            <input type="text" class="form-control" aria-label="Tag ID" name="tag-id" disabled>
+                            <input type="text" class="form-control" aria-label="Tag Name" name="tag-name">
+                            <input type="button" class="btn btn-warning" value="POST"
+                                onclick="window.submitYoutubeEditForm('tag')">
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Video</span>
+                            <input type="text" class="form-control" aria-label="Video ID" name="video-id">
+                            <input type="text" class="form-control" aria-label="Video Comment" name="video-comment">
+                            <input type="button" class="btn btn-warning" value="POST"
+                                onclick="window.submitYoutubeEditForm('video')">
+                        </div>
+                    </div>
+                </form>
+            </details>
+            <script>
+                (() => {
+                    window.submitYoutubeEditForm = function (type, method) {
+                        method = method || "POST";
+                        let tagSelectorEl = document.getElementById("entertainment-youtube-filter-form-tags");
+                        const selectedCategory = document.querySelector("input[name='category-id']").value;
+                        const selectedTags = tagSelectorEl.getAttribute("data-selected-tags").split(',');
+                        switch (type) {
+                            case "category":
+                                if (method === "DELETE") {
+                                    if (!confirm("Are you sure you want to delete this category?")) {
+                                        return;
+                                    }
+                                    $.ajax({
+                                        url: "/api/entertainment/youtube/category/"
+                                            + encodeURI(selectedCategory),
+                                        type: "DELETE",
+                                        success: function (result) {
+                                            window.location.reload();
+                                        }
+                                    });
+                                } else if (method == "POST") {
+                                    let categoryPostData = {
+                                        "id": document.querySelector("input[name='category-id']").value,
+                                        "display_name": document.querySelector("input[name='category-name']").value
+                                    }
+                                    $.ajax({
+                                        url: "/api/entertainment/youtube/categories",
+                                        type: "POST",
+                                        data: JSON.stringify(categoryPostData),
+                                        contentType: "application/json",
+                                        success: function (result) {
+                                            window.location.reload();
+                                        }
+                                    });
+                                }
+                                break;
+                            case "tag":
+                                let tagPostData = {
+                                    "id": document.querySelector("input[name='tag-id']").value,
+                                    "display_name": document.querySelector("input[name='tag-name']").value
+                                }
+                                $.ajax({
+                                    url: "/api/entertainment/youtube/category/" +
+                                        encodeURI(selectedCategory) + "/tags",
+                                    type: "POST",
+                                    data: JSON.stringify(tagPostData),
+                                    contentType: "application/json",
+                                    success: function (result) {
+                                        window.location.reload();
+                                    }
+                                });
+                                break;
+                            case "video":
+                                let videoPostData = {
+                                    "video_id": document.querySelector("input[name='video-id']").value,
+                                    "tags": selectedTags,
+                                    "comment": document.querySelector("input[name='video-comment']").value
+                                }
+                                $.ajax({
+                                    url: "/api/entertainment/youtube/category/" +
+                                        encodeURI(selectedCategory) + "/videos",
+                                    type: "POST",
+                                    data: JSON.stringify(videoPostData),
+                                    contentType: "application/json",
+                                    success: function (result) {
+                                        window.location.reload();
+                                    }
+                                });
+                        }
+                    }
+                })()
+            </script>
+            {{ end }}
+            {{ end }}
+        </div>
+    </div>
+    <hr>
+
+
+    <div class="table-responsive">
+        <table class="table" id="entertainment-youtube-videos">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Tags</th>
+                    <th scope="col">Comment</th>
+                    <th scope="col">Watch</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+        (() => {
+            "use strict";
+            let form = document.getElementById("entertainment-youtube-filter-form");
+            form.onsubmit = (e) => e.preventDefault
+            form.querySelector("input[name='watch-all']").onclick = function () {
+                let videos = JSON.parse(form.querySelector("textbox[name='filter-results']").innerText);
+                const videoId = videos[0].video_id;
+                let playList = [];
+                for (let i = 1; i < videos.length; i++) {
+                    playList.push(videos[i].video_id);
+                }
+                window.openYtPlayer(videoId, { playlist: playList });
+            }
+
+            let editForm = document.getElementById("entertainment-youtube-edit-form");
+            let editFormTagSelect;
+            if (editForm) {
+                editForm.onsubmit = (e) => e.preventDefault
+                editFormTagSelect = editForm.querySelector("select[name='tag-select']");
+                editFormTagSelect.onchange = (e) => {
+                    let selected = editFormTagSelect.options[editFormTagSelect.selectedIndex];
+                    let tagId = editForm.querySelector("input[name='tag-id']")
+                    let tagName = editForm.querySelector("input[name='tag-name']")
+                    tagName.value = selected.innerText;
+                    if (selected.value) {
+                        tagId.value = selected.value;
+                        tagId.disabled = true;
+                    } else {
+                        tagId.disabled = false;
+                    }
+                }
+                editForm.querySelector("input[name='category-use-existing']").onchange = (e) => {
+                    let input = editForm.querySelector("input[name='category-id']");
+                    if (e.target.checked) {
+                        input.disabled = true;
+                    } else {
+                        input.disabled = false;
+                    }
+                }
+            }
+
+
+            window.getEntertainmentYoutubeCategories = function () {
+                $.ajax({
+                    url: "/api/entertainment/youtube/categories",
+                    type: "GET",
+                    success: function (data) {
+                        let items = [];
+
+                        for (let [idx, category] of data.entries()) {
+                            let label = document.createElement('label');
+                            label.classList.add('form-check-label');
+                            label.innerText = category.display_name;
+
+                            let input = document.createElement('input');
+                            input.classList.add('form-check-input');
+                            input.setAttribute('type', 'radio');
+                            input.name = 'category';
+                            input.checked = idx === 0;
+                            input.onchange = doNow(function () {
+                                if (input.checked) {
+                                    window.getEntertainmentYoutubeTags(category.id);
+                                    if (editForm) {
+                                        if (editForm.querySelector("input[name='category-use-existing']").checked) {
+                                            editForm.querySelector('input[name="category-id"]').value = category.id;
+                                            editForm.querySelector('input[name="category-id"]').disabled = true;
+                                            editForm.querySelector('input[name="category-name"]').value = category.display_name;
+                                        }
+                                    }
+                                }
+                            });
+                            input.setAttribute('value', category.display_name);
+                            input.setAttribute('id', 'youtubePlaylistCate_' + category.id);
+
+                            let div = document.createElement('div');
+                            div.classList.add('form-check', 'form-check-inline');
+                            div.appendChild(input);
+                            div.appendChild(label);
+                            items.push(div);
+                        }
+                        document.getElementById('entertainment-youtube-filter-form-categories').innerHTML = '';
+                        document.getElementById('entertainment-youtube-filter-form-categories').append(...items);
+                        window.getEntertainmentYoutubeTags(data[0].id);
+                    },
+                });
+            }
+            let cachedTags = {};
+            window.getEntertainmentYoutubeTags = function (category) {
+                let editForm = document.getElementById("entertainment-youtube-edit-form");
+                $.ajax(
+                    {
+                        url: "/api/entertainment/youtube/category/" +
+                            encodeURIComponent(category) + "/tags",
+                        type: "GET",
+                        success: function (data) {
+                            let items = [];
+                            let tagFilterEl = document.getElementById("entertainment-youtube-filter-form-tags");
+                            tagFilterEl.setAttribute("data-selected-tags", data.reduce((acc, tag) =>
+                                (acc ? (acc + ",") : "") + tag.id, ""));
+                            if (editForm)
+                                editFormTagSelect.innerHTML = "";
+                            for (let [idx, tag] of data.entries()) {
+                                cachedTags[tag.id] = tag;
+                                if (editForm) {
+                                    let option = document.createElement('option');
+                                    option.value = tag.id;
+                                    option.innerText = tag.display_name;
+                                    editFormTagSelect.appendChild(option);
+                                }
+                                let label = document.createElement('label');
+                                label.classList.add('form-check-label');
+                                let labelSpan = document.createElement('span');
+                                labelSpan.classList.add('badge', 'text-bg-primary');
+                                labelSpan.innerText = tag.display_name;
+                                label.appendChild(labelSpan);
+
+                                let input = document.createElement('input');
+                                input.classList.add('form-check-input');
+                                input.setAttribute('type', 'checkbox');
+                                input.name = 'tag';
+                                input.checked = true;
+                                input.onchange = function () {
+
+                                    let selectedTags = [];
+                                    tagFilterEl.querySelectorAll('input[data-tag-id]').forEach(function (el) {
+                                        if (el.checked)
+                                            selectedTags.push(el.getAttribute('data-tag-id'));
+                                    });
+                                    tagFilterEl.setAttribute('data-selected-tags', selectedTags.join(','));
+                                    if (selectedTags.length === 0) {
+                                        input.checked = true;
+                                        return;
+                                    }
+                                    window.getEntertainmentYoutubeVideos(category, selectedTags);
+                                };
+                                input.setAttribute('data-tag-id', tag.id);
+                                input.setAttribute('value', tag.display_name);
+                                input.setAttribute('id', 'youtubePlaylistTag_' + tag.id);
+
+                                let div = document.createElement('div');
+                                div.classList.add('form-check', 'form-check-inline');
+                                div.appendChild(input);
+                                div.appendChild(label);
+                                items.push(div);
+                            }
+                            if (editForm) {
+                                let newOption = document.createElement('option');
+                                newOption.innerText = "New...";
+                                newOption.value = "";
+                                editFormTagSelect.appendChild(newOption);
+                            }
+                            document.getElementById('entertainment-youtube-filter-form-tags').innerHTML = '';
+                            document.getElementById('entertainment-youtube-filter-form-tags').append(...items);
+                            window.getEntertainmentYoutubeVideos(category);
+                        },
+                    }
+                );
+            }
+            window.getEntertainmentYoutubeVideos = function (category, tags) {
+                $.ajax(
+                    {
+                        url: "/api/entertainment/youtube/category/" +
+                            encodeURIComponent(category) + "/videos" + (
+                                tags ? ("?tags=" + tags.join(",")) : ""),
+                        type: "GET",
+                        success: function (data) {
+                            let items = [];
+                            form.querySelector("span[name='result-count']").innerText = data.length;
+                            form.querySelector("[name='filter-results']").innerText = JSON.stringify(data);
+                            for (let [idx, video] of data.entries()) {
+                                let tr = document.createElement('tr');
+
+                                let no = document.createElement('th');
+                                no.innerText = idx + 1;
+                                tr.appendChild(no);
+
+                                let titleEl = document.createElement('td');
+                                let titleA = document.createElement('a');
+                                titleA.href = "https://www.youtube.com/watch?v=" + video.video_id;
+                                titleA.target = "_blank";
+                                titleA.innerText = video.meta.title;
+                                titleEl.appendChild(titleA);
+                                let sep = document.createElement('span');
+                                sep.innerText = " by ";
+                                titleEl.appendChild(sep);
+                                let authorA = document.createElement('a');
+                                authorA.href = video.meta.author_url;
+                                authorA.target = "_blank";
+                                authorA.innerText = video.meta.author_name;
+                                titleEl.appendChild(authorA);
+                                tr.appendChild(titleEl);
+
+                                let tagsEl = document.createElement('td');
+                                for (let tag of video.tags) {
+                                    let span = document.createElement('span');
+                                    span.classList.add('badge', 'text-bg-primary');
+                                    span.innerText = cachedTags[tag].display_name;
+                                    tagsEl.appendChild(span);
+                                    tagsEl.appendChild(document.createElement("br"));
+                                }
+                                tr.appendChild(tagsEl);
+
+                                let comment = document.createElement('td');
+                                comment.innerHTML = video.comment;
+                                tr.appendChild(comment);
+
+                                let buttons = document.createElement('td');
+                                let watchBtn = document.createElement('button');
+                                watchBtn.classList.add('btn');
+                                watchBtn.classList.add('btn-primary');
+                                watchBtn.innerText = 'Watch';
+                                watchBtn.onclick = function () {
+                                    window.openYtPlayer(video.video_id);
+                                };
+                                buttons.appendChild(watchBtn);
+                                if (editForm) {
+                                    let editBtn = document.createElement('button');
+                                    editBtn.classList.add('btn', 'btn-warning', "mx-3");
+                                    editBtn.innerText = "Edit";
+                                    editBtn.onclick = function () {
+                                        editForm.parentNode.open = true;
+                                        editForm.querySelector('input[name="video-id"]').value = video.video_id;
+                                        editForm.querySelector('input[name="video-tags"]').value = video.tags.join(",");
+                                        editForm.querySelector('input[name="video-comment"]').value = video.comment;
+                                    }
+                                    buttons.appendChild(editBtn);
+                                }
+
+                                tr.appendChild(buttons);
+
+                                items.push(tr);
+                            }
+                            let tbody = document.getElementById('entertainment-youtube-videos').getElementsByTagName('tbody')[0];
+                            tbody.innerHTML = '';
+                            tbody.append(...items);
+                        },
+                    }
+                );
+            }
+            $(document).ready(getEntertainmentYoutubeCategories);
+        })()
+</script>

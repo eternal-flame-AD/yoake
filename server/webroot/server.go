@@ -7,9 +7,15 @@ import (
 
 	"github.com/eternal-flame-AD/yoake/config"
 	"github.com/eternal-flame-AD/yoake/internal/auth"
+	"github.com/eternal-flame-AD/yoake/internal/canvaslms"
+	"github.com/eternal-flame-AD/yoake/internal/comm"
+	"github.com/eternal-flame-AD/yoake/internal/db"
+	"github.com/eternal-flame-AD/yoake/internal/echoerror"
+	"github.com/eternal-flame-AD/yoake/internal/entertainment"
 	"github.com/eternal-flame-AD/yoake/internal/servetpl"
 	"github.com/eternal-flame-AD/yoake/internal/session"
 	"github.com/eternal-flame-AD/yoake/internal/twilio"
+	"github.com/eternal-flame-AD/yoake/internal/utilapi"
 	"github.com/eternal-flame-AD/yoake/server"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
@@ -17,7 +23,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func Init(hostname string) {
+func Init(hostname string, comm *comm.CommProvider, database db.DB) {
 	e := echo.New()
 
 	webroot := config.Config().WebRoot
@@ -57,14 +63,25 @@ func Init(hostname string) {
 		e.Use(middleware.RequestLoggerWithConfig(lc))
 	}
 
-	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			defer context.Clear(c.Request())
-			c.Set(session.SessionStoreKeyPrefix+"cookie", (sessions.Store)(sessionCookie))
-			c.Set(session.SessionStoreKeyPrefix+"fs", (sessions.Store)(fsCookie))
-			return next(c)
-		}
-	},
+	api := e.Group("/api", echoerror.Middleware(echoerror.JSONWriter))
+	{
+		canvaslms.Register(api.Group("/canvas", logMiddleware("api_canvas", nil)), comm)
+		utilapi.Register(api.Group("/util", logMiddleware("api_util", nil)))
+		comm.RegisterAPIRoute(api.Group("/comm", logMiddleware("api_comm", nil)))
+		auth.Register(api.Group("/auth", logMiddleware("api_auth", nil)))
+		entertainment.Register(api.Group("/entertainment", logMiddleware("api_entertainment", nil)), database)
+	}
+
+	e.Use(
+		echoerror.Middleware(echoerror.HTMLWriter),
+		func(next echo.HandlerFunc) echo.HandlerFunc {
+			return func(c echo.Context) error {
+				defer context.Clear(c.Request())
+				c.Set(session.SessionStoreKeyPrefix+"cookie", (sessions.Store)(sessionCookie))
+				c.Set(session.SessionStoreKeyPrefix+"fs", (sessions.Store)(fsCookie))
+				return next(c)
+			}
+		},
 		middleware.Gzip(),
 		auth.Middleware(sessionCookie),
 		logMiddleware("twilio", twilio.VerifyMiddleware("/twilio", config.Config().Twilio.BaseURL)),

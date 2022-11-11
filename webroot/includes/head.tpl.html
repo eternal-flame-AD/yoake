@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -10,7 +10,19 @@
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
 
-    <title>{{ with get .Global "Title" }}{{ . }} | {{ end }}{{ (call .Config).WebRoot.SiteName }}</title>
+    <title>{{ with get .Global "Title" }}{{ . }}{{else}}Welcome{{end}} | {{ (call .Config).WebRoot.SiteName }}</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.6/dayjs.min.js"
+        integrity="sha256-EfJOqCcshFS/2TxhArURu3Wn8b/XDA4fbPWKSwZ+1B8=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.6/plugin/relativeTime.js"
+        integrity="sha256-muryXOPFkVJcJO1YFmhuKyXYmGDT2TYVxivG0MCgRzg=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.6/plugin/localizedFormat.js"
+        integrity="sha256-g+gxm1xmRq4IecSRujv2eKyUCo/i1b5kRnWNcSbYEO0=" crossorigin="anonymous"></script>
+
+    <script>
+        dayjs.extend(window.dayjs_plugin_relativeTime);
+        dayjs.extend(window.dayjs_plugin_localizedFormat);
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.1/dist/jquery.min.js"
         integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
@@ -23,7 +35,9 @@
 
 
     <link rel="stylesheet" href="/style.css">
+    <script src="/lib/lib.js"></script>
     <script src="/lib/auth.js"></script>
+    <script src="/lib/error.js"></script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
