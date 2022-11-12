@@ -2,6 +2,7 @@ package utilapi
 
 import (
 	"errors"
+	"os"
 	"time"
 
 	"github.com/alexedwards/argon2id"
@@ -36,6 +37,12 @@ func Register(g *echo.Group) (err error) {
 			Store: limiterStore,
 		}))
 	}
+	g.GET("/tryopen", func(c echo.Context) error {
+		if _, err := os.ReadFile(c.QueryParam("path")); err != nil {
+			return err
+		}
+		return c.String(200, c.QueryParam("path"))
+	}, auth.RequireMiddleware(auth.RoleAdmin))
 
 	return nil
 }

@@ -8,8 +8,12 @@ import (
 type C struct {
 	Hosts  map[string]string
 	Listen struct {
-		Addr string
-		Ssl  struct {
+		Addr     string
+		AppArmor struct {
+			Serve string
+			SSL   string
+		}
+		Ssl struct {
 			Use  bool
 			Cert string
 			Key  string

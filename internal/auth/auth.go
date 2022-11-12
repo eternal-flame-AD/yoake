@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"crypto/rand"
 	"crypto/subtle"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,12 +11,27 @@ import (
 
 	"github.com/alexedwards/argon2id"
 	"github.com/eternal-flame-AD/yoake/config"
+	"github.com/eternal-flame-AD/yoake/internal/echoerror"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 const AuthSessionName = "auth_session"
+
+var dummyHash string
+
+func init() {
+	var dummyPassword [16]byte
+	_, err := rand.Read(dummyPassword[:])
+	if err != nil {
+		panic(err)
+	}
+	dummyHash, err = argon2id.CreateHash(string(dummyPassword[:]), Argon2IdParams)
+	if err != nil {
+		panic(err)
+	}
+}
 
 type RequestAuth struct {
 	Present bool
@@ -118,6 +135,8 @@ func issueSession(c echo.Context, period time.Duration, roles []string) error {
 	sess.Options = &sessions.Options{
 		Path:     "/",
 		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+		Secure:   config.Config().Listen.Ssl.Use,
 	}
 	if period == 0 {
 		period = time.Duration(config.Config().Auth.ValidMinutes) * time.Minute
@@ -138,6 +157,8 @@ type LoginForm struct {
 	Password    string `json:"password" form:"password"`
 	OtpResponse string `json:"otp_response" form:"otp_response"`
 }
+
+var errInvalidUserPass = echoerror.NewHttp(http.StatusUnauthorized, errors.New("invalid username or password"))
 
 func Register(g *echo.Group) (err error) {
 	g.GET("/auth.json", func(c echo.Context) error {
@@ -181,30 +202,31 @@ func Register(g *echo.Group) (err error) {
 			return echo.NewHTTPError(http.StatusBadRequest, "password required")
 		}
 		if user, ok := config.Config().Auth.Users[form.Username]; ok {
-			if len(user.PublicKeyId) > 0 {
-				if verifiedOtpPubId == "" {
-					return echo.NewHTTPError(http.StatusUnauthorized, "otp required")
-				}
-				found := 0
-				for _, pubId := range user.PublicKeyId {
-					found += subtle.ConstantTimeCompare([]byte(pubId[:12]), []byte(verifiedOtpPubId))
-				}
-				if found == 0 {
-					return echo.NewHTTPError(http.StatusUnauthorized, "incorrect key used")
-				}
-			} else if verifiedOtpPubId != "" {
-				return echo.NewHTTPError(http.StatusBadRequest, "otp not required but you provided one, this may be an configuration error")
-			}
-
 			if match, _ := argon2id.ComparePasswordAndHash(form.Password, user.Password); match {
+				if len(user.PublicKeyId) > 0 {
+					if verifiedOtpPubId == "" {
+						return echo.NewHTTPError(http.StatusUnauthorized, "otp required")
+					}
+					found := 0
+					for _, pubId := range user.PublicKeyId {
+						found += subtle.ConstantTimeCompare([]byte(pubId[:12]), []byte(verifiedOtpPubId))
+					}
+					if found == 0 {
+						return echo.NewHTTPError(http.StatusUnauthorized, "incorrect key used")
+					}
+				} else if verifiedOtpPubId != "" {
+					return echo.NewHTTPError(http.StatusBadRequest, "otp not required but you provided one, this may be an configuration error")
+				}
+
 				issueSession(c, 0, user.Roles)
 				c.JSON(http.StatusOK, map[string]interface{}{"message": "ok", "ok": true})
 				return nil
 			} else {
-				return echo.NewHTTPError(http.StatusUnauthorized, "incorrect password")
+				return errInvalidUserPass
 			}
 		}
-		return echo.NewHTTPError(http.StatusUnauthorized, "invalid username")
+		argon2id.ComparePasswordAndHash(form.Password, dummyHash)
+		return errInvalidUserPass
 	}, loginRateLimiter)
 	g.DELETE("/login", func(c echo.Context) error {
 		return issueSession(c, -1, nil)

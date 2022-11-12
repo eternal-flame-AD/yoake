@@ -6,9 +6,9 @@
         <div class="row p-2">
             <div class="col">
                 <div class="card border">
-                    <div class="card-header">Quote</div>
-                    <div class="card-body">
-                        <blockquote class="blockquote text-center">
+                    <div class="card-header">Welcome</div>
+                    <div class="card-body text-center">
+                        <blockquote class="blockquote">
                             <p>
                                 夜明け前が一番暗い
                             </p>
@@ -17,6 +17,42 @@
                             </p>
 
                         </blockquote>
+                        <hr>
+                        <div id="welcome">
+                            <p>
+                                Welcome to yoake.yumechi.jp, Yumechi's <a target="_blank"
+                                    href="https://en.wikipedia.org/wiki/Personal_information_manager">
+                                    <abbr title="Personal Information Manager" class="initialism">PIM</abbr></a>.
+                            </p>
+                            <p>
+                                Built with
+                                <abbr title="Echo HTTP Framework"><a target="_blank" rel="nofollow noreferer"
+                                        href="https://echo.labstack.com/">Echo</a></abbr>,
+                                <abbr title="Bootstrap CSS Framework"><a target="_blank" rel="nofollow noreferer"
+                                        href="https://getbootstrap.com/">Bootstrap</a></abbr>,
+                                <abbr title="jQuery JavaScript Library"><a href="https://jquery.com/" target="_blank"
+                                        rel="nofollow noreferer">jQuery</a></abbr>,
+                                and
+                                <abbr title="Golang Standard Library html/template"><a target="_blank"
+                                        rel="nofollow noreferer"
+                                        href="https://pkg.go.dev/html/template">html/template</a></abbr>.
+                                Intended to be a parody of the
+                                <abbr title="Terumo BCT Trima Accel(R)"><a href="https://www.terumobct.com/trima"
+                                        target="_blank" rel="nofollow noreferer">Trima Accel (R)</a></abbr> UI.
+                            </p>
+                            <p>
+                                {{ if not $auth.Valid }}
+                                This website welcomes guests as well!
+                                Click around and I hope you cound have some fun!
+                                {{ else }}
+                                {{ if eq (index $auth.Roles 0) "admin" }}
+                                Welcome Home!
+                                {{ else }}
+                                Hello, my friend! You know the drill!
+                                {{ end }}
+                                {{ end }}
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -96,9 +132,61 @@
                         </p>
                         <button class="btn btn-primary" onclick="signin()">Sign In</button>
                         {{ end }}
+                        <table class="table text-center">
+                            <thead>
+                                <tr>
+                                    <th>Tab Status Icon</th>
+                                    <th>Meaning</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <img src={{ trima_img "icon_t_vista_procedure_optimal.gif" "url" }} />
+                                    </td>
+                                    <td class="align-middle">
+                                        Tab Selected (Active)
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <img src={{ trima_img "icon_t_vista_procedure_valid.gif" "url" }} />
+                                    </td>
+                                    <td class="align-middle">
+                                        Tab Available
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <img src={{ trima_img "icon_t_vista_procedure_ineligible.gif" "url" }} />
+                                    </td>
+                                    <td class="align-middle">
+                                        Addn. Authorization Required
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <img src={{ trima_img "icon_t_vista_procedure_questionable.gif" "url" }} />
+                                    </td>
+                                    <td class="align-middle">
+                                        Unknown
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <img src={{ trima_img "icon_t_vista_procedure_invalid.gif" "url" }} />
+                                    </td>
+                                    <td class="align-middle">
+                                        Access Denied
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 </main>

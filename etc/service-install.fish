@@ -6,12 +6,13 @@ make verify
 make build
  or exit 2
 
+if ! diff etc/yoake-server.service /etc/systemd/system/yoake-server.service
+    sudo cp etc/yoake-server.service /etc/systemd/system/yoake-server.service
+        or exit 2
 
-sudo cp etc/yoake-server.service /etc/systemd/system/yoake-server.service
-    or exit 2
-
-sudo systemctl daemon-reload
-    or exit 2
+    sudo systemctl daemon-reload
+        or exit 2
+end
 
 sudo systemctl stop yoake-server.service
 

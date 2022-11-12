@@ -1,5 +1,7 @@
 listen:
   addr: :80
+  apparmor:
+    ssl: ssl
   ssl:
     use: off
     cert: "fullchain.pem"

@@ -1,5 +1,5 @@
 <h2>お姫様の成績がアップデートされました！</h2>
-<h2><a href="https://yoake.yumechi.jp/#canvas-grades">最近の採点</h2>
+<h2><a href="https://yoake.yumechi.jp/#canvas-grades">最近の採点</a></h2>
 <table>
     <thead>
         <tr>
@@ -17,10 +17,9 @@
         <tr>
             <td>{{ .SubmissionUserName }}</td>
             <td>{{ .CourseCode }}</td>
-            <td><a href="{{.AssignmentURL}}"">{{ .Name }}</a></td>
+            <td><a href="{{.AssignmentURL}}">{{ .Name }}</a></td>
             <td>{{if eq .Due " -" }}No Due{{else}}{{.Due}}{{end}}</td>
-            <td>{{if .GradeHidden }}(hidden){{else}}{{if le .Score -0.01}}(not graded){{else}}{{ .Score | sprintf "%.2f"
-                }} ({{ .Grade }}){{end}} /{{ .PossiblePoints | sprintf "%.2f" }} {{end}}</td>
+            <td>{{if .GradeHidden }}(hidden){{else}}{{if le .Score -0.01}}(not graded){{else}}{{ .Score | sprintf "%.2f" }} ({{ .Grade }}){{end}} /{{ .PossiblePoints | sprintf "%.2f" }} {{end}}</td>
             <td>{{ .GradedAt }} </td>
             <td>{{ .PostedAt }}</td>
         </tr>
