@@ -14,7 +14,7 @@ import (
 
 	"github.com/eternal-flame-AD/yoake/config"
 	"github.com/eternal-flame-AD/yoake/internal/auth"
-	"github.com/eternal-flame-AD/yoake/internal/comm"
+	"github.com/eternal-flame-AD/yoake/internal/comm/model"
 	"github.com/eternal-flame-AD/yoake/internal/echoerror"
 	"github.com/labstack/echo/v4"
 )
@@ -25,7 +25,7 @@ type Handler struct {
 	respCache      *responseCache
 	respCacheMutex sync.RWMutex
 	refreshPeriod  time.Duration
-	comm           *comm.CommProvider
+	comm           model.Communicator
 }
 
 type GetGradesResponse struct {
@@ -238,7 +238,7 @@ type responseCache struct {
 	submissionLastUpdate map[string]time.Time
 }
 
-func Register(g *echo.Group, comm *comm.CommProvider) (h *Handler, err error) {
+func Register(g *echo.Group, comm model.Communicator) (h *Handler, err error) {
 	h = &Handler{conf: config.Config().CanvasLMS, comm: comm}
 	if h.conf.Token == "" {
 		return nil, errors.New("canvas token not set")

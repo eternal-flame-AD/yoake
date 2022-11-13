@@ -22,7 +22,7 @@ func init() {
 	flag.Parse()
 	config.ParseConfig(*flagConfig)
 
-	comm := comm.InitializeCommProvider()
+	comm := comm.InitCommunicator()
 	db, err := db.New(config.Config())
 	if err != nil {
 		log.Panicf("failed to initialize database: %v", err)
