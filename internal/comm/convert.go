@@ -12,16 +12,18 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/eternal-flame-AD/yoake/internal/comm/model"
 	"github.com/eternal-flame-AD/yoake/internal/servetpl/funcmap"
+	"github.com/eternal-flame-AD/yoake/internal/util"
 	"github.com/gomarkdown/markdown"
 )
 
-func contains[T comparable](s []T, e T) bool {
-	for _, a := range s {
-		if a == e {
-			return true
+func unique[T comparable](s []T) []T {
+	var result []T
+	for _, e := range s {
+		if !util.Contain(result, e) {
+			result = append(result, e)
 		}
 	}
-	return false
+	return result
 }
 
 type ErrorMIMENoOverlap struct {
@@ -33,8 +35,25 @@ func (e *ErrorMIMENoOverlap) Error() string {
 	return fmt.Sprintf("message MIME type %s is not supported by this communicator. Supported MIME types are: %s", e.MessageMIME, e.supportedMIME)
 }
 
+func ConvertOutMIMEToSupportedInMIME(outMIMEs []string) (inMIMEs []string) {
+	inMIMEs = outMIMEs
+	for _, out := range outMIMEs {
+		if out == "text/plain" {
+			inMIMEs = append(inMIMEs, "text/html", "text/markdown")
+		}
+		if out == "text/html" {
+			inMIMEs = append(inMIMEs, "text/markdown")
+		}
+	}
+	for _, in := range inMIMEs {
+		inMIMEs = append(inMIMEs, in+"+html/template", in+"+text/template")
+	}
+	inMIMEs = unique(inMIMEs)
+	return
+}
+
 func ConvertGenericMessage(msgOrig *model.GenericMessage, supportedMIMES []string) (*model.GenericMessage, error) {
-	if contains(supportedMIMES, msgOrig.MIME) {
+	if util.Contain(supportedMIMES, msgOrig.MIME) {
 		return msgOrig, nil
 	}
 	msg := *msgOrig
@@ -86,17 +105,17 @@ func ConvertGenericMessage(msgOrig *model.GenericMessage, supportedMIMES []strin
 		}
 		msg.Body = output.String()
 	}
-	if contains(supportedMIMES, msg.MIME) {
+	if util.Contain(supportedMIMES, msg.MIME) {
 		return &msg, nil
 	}
 
 	// convert markdown to html
-	if msg.MIME == "text/markdown" && !contains(supportedMIMES, "text/markdown") {
+	if msg.MIME == "text/markdown" && !util.Contain(supportedMIMES, "text/markdown") {
 		msg.Body = string(markdown.ToHTML([]byte(msg.Body), nil, nil))
 		msg.MIME = "text/html"
 	}
 	// convert html to text
-	if msg.MIME == "text/html" && !contains(supportedMIMES, "text/html") && contains(supportedMIMES, "text/plain") {
+	if msg.MIME == "text/html" && !util.Contain(supportedMIMES, "text/html") && util.Contain(supportedMIMES, "text/plain") {
 		docBuf := strings.NewReader(msg.Body)
 		doc, err := goquery.NewDocumentFromReader(docBuf)
 		if err != nil {
@@ -106,7 +125,7 @@ func ConvertGenericMessage(msgOrig *model.GenericMessage, supportedMIMES []strin
 		msg.MIME = "text/plain"
 	}
 
-	if !contains(supportedMIMES, msg.MIME) {
+	if !util.Contain(supportedMIMES, msg.MIME) {
 		return nil, &ErrorMIMENoOverlap{
 			MessageMIME:   msg.MIME,
 			supportedMIME: supportedMIMES,

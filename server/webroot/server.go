@@ -23,7 +23,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func Init(hostname string, comm *comm.CommProvider, database db.DB) {
+func Init(hostname string, comm *comm.Communicator, database db.DB) {
 	e := echo.New()
 
 	webroot := config.Config().WebRoot

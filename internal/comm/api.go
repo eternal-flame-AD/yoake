@@ -3,6 +3,7 @@ package comm
 import (
 	"github.com/eternal-flame-AD/yoake/internal/auth"
 	"github.com/eternal-flame-AD/yoake/internal/comm/model"
+	"github.com/eternal-flame-AD/yoake/internal/util"
 	"github.com/labstack/echo/v4"
 )
 
@@ -13,7 +14,7 @@ type CommStatusResponse struct {
 	} `json:"communicators"`
 }
 
-func (c *CommProvider) RegisterAPIRoute(g *echo.Group) {
+func (c *Communicator) RegisterAPIRoute(g *echo.Group) {
 	send := g.Group("/send", auth.RequireMiddleware(auth.RoleAdmin))
 	{
 		send.POST("", func(ctx echo.Context) error {
@@ -49,11 +50,11 @@ func (c *CommProvider) RegisterAPIRoute(g *echo.Group) {
 				SupportedMIME []string
 			}{
 				Method:        comm,
-				SupportedMIME: c.communicators[comm].SupportedMIME(),
+				SupportedMIME: c.commMethods[comm].SupportedMIME(),
 			})
 		}
-		for key, comm := range c.communicators {
-			if !contains(c.fallbackCommunicators, key) {
+		for key, comm := range c.commMethods {
+			if !util.Contain(c.fallbackCommunicators, key) {
 				communicators = append(communicators, struct {
 					Method        string
 					SupportedMIME []string
