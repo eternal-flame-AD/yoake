@@ -3,13 +3,13 @@ package funcmap
 import "github.com/eternal-flame-AD/yoake/internal/version"
 
 type V struct {
-	Version   string
-	BuildDate string
+	Version string
+	Date    string
 }
 
 func Version() (*V, error) {
 	return &V{
-		Version:   version.Version,
-		BuildDate: version.BuildDate,
+		Version: version.Version,
+		Date:    version.Date,
 	}, nil
 }

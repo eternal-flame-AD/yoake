@@ -42,8 +42,9 @@ clean:
 	rm -rf dist
 
 dist/%: ${CMD_DIR}/% FORCE
-	go build \
-		-ldflags "-X ${MODULE_PATH}/internal/version.BuildDate=$(BUILDDATE)" \
+	go build -buildvcs\
+		-ldflags "-X ${MODULE_PATH}/internal/version.tagVersion=$(VERSION) 	\
+				  -X ${MODULE_PATH}/internal/version.buildDate=$(BUILDDATE)" \
 		-o $@ ${MODULE_PATH}/$<
 
 .PHONY: build clean
