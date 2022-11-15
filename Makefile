@@ -42,7 +42,7 @@ clean:
 	rm -rf dist
 
 dist/%: ${CMD_DIR}/% FORCE
-	go build \
+	go build -buildvcs \
 		-ldflags "-X ${MODULE_PATH}/internal/version.BuildDate=$(BUILDDATE)" \
 		-o $@ ${MODULE_PATH}/$<
 
