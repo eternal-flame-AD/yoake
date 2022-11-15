@@ -5,8 +5,9 @@ import (
 	"log"
 	"os"
 
+	"github.com/eternal-flame-AD/go-apparmor/apparmor"
+	"github.com/eternal-flame-AD/go-apparmor/apparmor/magic"
 	"github.com/eternal-flame-AD/yoake/config"
-	"github.com/eternal-flame-AD/yoake/internal/apparmor"
 	"github.com/eternal-flame-AD/yoake/internal/comm"
 	"github.com/eternal-flame-AD/yoake/internal/db"
 	"github.com/eternal-flame-AD/yoake/server"
@@ -40,26 +41,14 @@ func init() {
 	}
 }
 
-func changeHat() {
-	profile := config.Config().Listen.AppArmor.Serve
-	if profile != "" {
-		token, err := apparmor.GetMagicToken()
-		if err != nil {
-			log.Panicf("failed to get apparmor magic token: %v", err)
-		}
-		if err := apparmor.ChangeHat(profile, token); err != nil {
-			log.Panicf("failed to change apparmor hat: %v", err)
-		} else {
-			log.Printf("changed apparmor hat to %s", profile)
-		}
-	}
-}
-
 func main() {
 	listen := config.Config().Listen
+
+	Server := server.New()
 	if listen.Ssl.Use {
 		var sslCertBytes, sslKeyBytes []byte
-		apparmor.ExecuteInHat(listen.AppArmor.SSL, func() {
+
+		readCerts := func() {
 			var err error
 			sslCertBytes, err = os.ReadFile(listen.Ssl.Cert)
 			if err != nil {
@@ -69,16 +58,27 @@ func main() {
 			if err != nil {
 				log.Panicf("failed to read ssl key: %v", err)
 			}
-		}, true)
+		}
+		magic, err := magic.Generate(nil)
+		if err != nil {
+			log.Panicf("failed to generate apparmor magic token: %v", err)
+		}
+
 		if listen.AppArmor.SSL != "" {
+			if err := apparmor.WithHat(listen.AppArmor.SSL, func() uint64 { return magic }, readCerts); err != nil {
+				log.Panicf("failed to read ssl cert/key with apparmor hat: %v", err)
+			}
+
 			// defensive programming, try read ssl key
 			if _, err := os.ReadFile(listen.Ssl.Key); err == nil {
 				log.Panicf("AppArmor profile set for SSL but I could still read %v!", listen.Ssl.Key)
 			}
+		} else {
+			readCerts()
 		}
 
-		log.Fatalln(server.Server.StartTLS(listen.Addr, sslCertBytes, sslKeyBytes))
+		log.Fatalln(Server.StartTLS(listen.Addr, sslCertBytes, sslKeyBytes))
 	} else {
-		log.Fatalln(server.Server.Start(listen.Addr))
+		log.Fatalln(Server.Start(listen.Addr))
 	}
 }

@@ -4,7 +4,15 @@
 {{ $num_visited := (get $session "num_visited") }}
 {{ if not $num_visited }}{{ $num_visited = 0 }} {{ end }}
 {{ set $session "num_visited" (math "argv(1) + 1" $num_visited) }}
+
 <Response>
+
+{{ if $src := (invoke "FormValue" .C "ForwardedFrom") }}
+    {{ if eq $src "+15122993080" }}
+        <Redirect method="POST">/twilio/voice/voicemail.xml></Redirect>
+    {{ end }}
+{{ end }}
+
     <Say voice="alice" language="en-US">This is Anne!</Say>
     <Redirect method="POST">/twilio/voice/menu.xml</Redirect>
 </Response>

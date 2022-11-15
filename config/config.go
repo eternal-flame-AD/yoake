@@ -1,11 +1,14 @@
 package config
 
 import (
+	"log"
+
 	"github.com/jinzhu/configor"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 type C struct {
+	parsed bool
 	Hosts  map[string]string
 	Listen struct {
 		Addr     string
@@ -69,6 +72,9 @@ var parsedC C
 var c C
 
 func Config() C {
+	if !c.parsed {
+		log.Panicln("Config() called without calling ParseConfig() first")
+	}
 	return c
 }
 
@@ -81,5 +87,6 @@ func MockConfig(freshEnv bool, wrapper func(deployedC *C)) {
 
 func ParseConfig(files ...string) {
 	configor.Load(&parsedC, files...)
+	parsedC.parsed = true
 	c = parsedC
 }

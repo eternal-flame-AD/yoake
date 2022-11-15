@@ -43,8 +43,7 @@ clean:
 
 dist/%: ${CMD_DIR}/% FORCE
 	go build \
-		-ldflags "-X ${MODULE_PATH}/internal/version.Version=$(VERSION) 	\
-				  -X ${MODULE_PATH}/internal/version.BuildDate=$(BUILDDATE)" \
+		-ldflags "-X ${MODULE_PATH}/internal/version.BuildDate=$(BUILDDATE)" \
 		-o $@ ${MODULE_PATH}/$<
 
 .PHONY: build clean

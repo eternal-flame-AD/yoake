@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/eternal-flame-AD/go-apparmor/apparmor"
 	"github.com/eternal-flame-AD/yoake/internal/auth"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -14,9 +15,10 @@ import (
 
 type logEntry struct {
 	middleware.RequestLoggerValues
-	Categories []string
-	CleanPath  string
-	Auth       auth.RequestAuth
+	Categories  []string
+	CleanPath   string
+	AppArmorCon string
+	Auth        auth.RequestAuth
 }
 
 func processLoggerValues(c echo.Context, values middleware.RequestLoggerValues) logEntry {
@@ -26,11 +28,20 @@ func processLoggerValues(c echo.Context, values middleware.RequestLoggerValues) 
 		logSetRequestCategory(c, fmt.Sprintf("status_%s", statusString))
 		statusString[i] = 'x'
 	}
+
+	aaCon := ""
+	label, mode, err := apparmor.AAGetCon()
+	if err != nil {
+		aaCon = fmt.Sprintf("error: %s", err)
+	} else {
+		aaCon = fmt.Sprintf("%s (%s)", label, mode)
+	}
 	return logEntry{
 		RequestLoggerValues: values,
 		Categories:          logGetCategories(c),
 		CleanPath:           path.Clean(c.Request().URL.Path),
 		Auth:                auth.GetRequestAuth(c),
+		AppArmorCon:         aaCon,
 	}
 }
 

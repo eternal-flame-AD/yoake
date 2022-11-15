@@ -1,0 +1,6 @@
+{{ template "/twilio/head.tpl.xml" . }}
+
+<Response>
+<!-- TODO: finish -->
+    <Hangup />
+</Response>
