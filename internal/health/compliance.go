@@ -132,6 +132,13 @@ func (c ComplianceLogList) ComputeDoseOffset(dir Direction, newLog *ComplianceLo
 		}
 	}
 
+	// ad lib ignore negative offsets
+	if util.Contain(dir.Flags, DirectionFlagAdLib) {
+		if offset < 0 {
+			offset = 0
+		}
+	}
+
 	if math.Abs(offset) > 2 {
 		// stop counting if three or more doses are missed
 		return 0, false, nil

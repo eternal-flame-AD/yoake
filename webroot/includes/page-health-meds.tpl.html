@@ -130,6 +130,11 @@
                                 <input type="checkbox" class="form-check-input" id="flags-prn" name="PRN" value="prn">
                                 <label for="flags-prn" class="form-check-label">PRN</label>
                             </div>
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" class="form-check-input" id="flags-adlib" name="adlib"
+                                    value="ad lib">
+                                <label for="flags-adlib" class="form-check-label">ad lib</label>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="flags" class="form-label">Schedule:</label>
@@ -162,6 +167,7 @@
                                     $("#addMed #flags-qam").prop("checked", data.flags.includes("qam"));
                                     $("#addMed #flags-qhs").prop("checked", data.flags.includes("qhs"));
                                     $("#addMed #flags-prn").prop("checked", data.flags.includes("prn"));
+                                    $("#addMed #flags-adlib").prop("checked", data.flags.includes("ad lib"));
                                     $("#addMed #schedule-default").prop("checked", data.schedule == "default");
                                     $("#addMed #schedule-whole").prop("checked", data.schedule == "whole");
                                 }
@@ -185,6 +191,9 @@
                             }
                             if ($("#addMed #flags-prn").prop("checked")) {
                                 flags.push("prn");
+                            }
+                            if ($("#addMed #flags-adlib").prop("checked")) {
+                                flags.push("ad lib");
                             }
                             let schedule = $("#addMed input[name=schedule]:checked").val();
                             $.ajax({
@@ -229,6 +238,7 @@
                     medList.map(med => new Promise((resolve, reject) => {
                         {
                             const prn = med.flags.includes("prn");
+                            const adlib = med.flags.includes("ad lib");
                             let id = "med-direction-accordion-" + med.name
                             let accEl = document.getElementById(id)
                             if (!accEl) {
@@ -291,17 +301,17 @@
                                     let available = false
                                     icon.setAttribute("class", "accordion-icon")
                                     if (data.dose_offset < -0.2 || dayjs().isAfter(dayjs(data.expected.time).add(1, "day"))) {
-                                        accEl.setAttribute("data-weight", prn ? 5 : 15)
+                                        accEl.setAttribute("data-weight", (prn || adlib) ? 5 : 10)
                                         icon.classList.add("trima-procedure-ineligible")
-                                    } else if (data.dose_offset >= 0 && !prn) {
+                                    } else if (data.dose_offset < 0 || adlib || (prn && data.dose_offset == 0)) {
                                         available = true
-                                        accEl.setAttribute("data-weight", 50)
-                                        important = true
-                                        icon.classList.add("trima-procedure-optimal")
+                                        accEl.setAttribute("data-weight", (prn || adlib) ? 15 : 20)
+                                        icon.classList.add("trima-procedure-valid")
                                     } else {
                                         available = true
-                                        accEl.setAttribute("data-weight", prn ? 10 : 20)
-                                        icon.classList.add("trima-procedure-valid")
+                                        accEl.setAttribute("data-weight", 50)
+                                        important = !adlib
+                                        icon.classList.add("trima-procedure-optimal")
                                     }
                                     if (initial) {
                                         accEl.querySelector(".accordion-collapse").classList[important ? "add" : "remove"]("show")
@@ -324,7 +334,7 @@
                                             projectedTr.classList.add("table-primary");
                                             projectedTr.innerHTML = `<th scope="row"></th><td></td><td></td><td></td>`;
                                             labelTimeElement(projectedTr.children[0], data.expected.time);
-                                            projectedTr.children[1].innerText = `${data.expected.dose} ${med.dosage_unit} (${prn ? "available" : "scheduled"})`;
+                                            projectedTr.children[1].innerText = `${data.expected.dose} ${med.dosage_unit} (${(prn || adlib) ? "available" : "scheduled"})`;
                                             tbody.appendChild(projectedTr);
 
                                             logs.forEach(log => {
@@ -383,6 +393,8 @@
 
                                             if (prn)
                                                 $(medTimeline).find(".bar").attr("fill", "#B19693");
+                                            else if (adlib)
+                                                $(medTimeline).find(".bar").attr("fill", "#F596AA");
 
                                             timelineDoses = timelineDoses.map(dose => {
                                                 dose.time = dayjs(dose.time)

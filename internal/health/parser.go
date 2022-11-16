@@ -37,6 +37,7 @@ const (
 	DirectionFlagAM      DirectionFlag = "qam"
 	DirectionFlagHS      DirectionFlag = "qhs"
 	DirectionFlagPRN     DirectionFlag = "prn"
+	DirectionFlagAdLib   DirectionFlag = "ad lib"
 	OptScheduleDefault   OptSchedule   = "default"
 	OptScheduleWholeDose OptSchedule   = "whole"
 )
@@ -86,12 +87,23 @@ func ParseShorthand(shorthand string) (*Direction, error) {
 			words[i] = words[i] + words[i+1]
 			words[i+1] = ""
 		}
+		if strings.ToLower(words[i]) == "ad" && strings.ToLower(words[i+1]) == "lib" {
+			res.Flags = append(res.Flags, DirectionFlagAdLib)
+			words[i] = ""
+			words[i+1] = ""
+		} else if strings.ToLower(words[i]) == "adlib" {
+			res.Flags = append(res.Flags, DirectionFlagAdLib)
+			words[i] = ""
+		}
 	}
 	words = util.AntiJoin(words, []string{""})
 
 	// find prn keyword
 	for i := len(words) - 1; i >= 0; i-- {
 		if strings.EqualFold(words[i], "prn") {
+			if util.Contain(res.Flags, DirectionFlagAdLib) {
+				return nil, fmt.Errorf("cannot use 'ad lib' and 'prn' together")
+			}
 			res.Flags = append(res.Flags, DirectionFlagPRN)
 			words = append(words[:i], words[i+1:]...)
 			break
@@ -214,6 +226,8 @@ func (d *Direction) ShortHand() (name string, direction string) {
 	}
 	if util.Contain(d.Flags, DirectionFlagPRN) {
 		builder.WriteString(" PRN")
+	} else if util.Contain(d.Flags, DirectionFlagAdLib) {
+		builder.WriteString(" ad lib")
 	}
 	if d.OptSchedule != "" && d.OptSchedule != OptScheduleDefault {
 		if d.OptSchedule == OptScheduleWholeDose {

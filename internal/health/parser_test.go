@@ -46,6 +46,15 @@ func TestShortHandParser(t *testing.T) {
 			OptSchedule: OptScheduleDefault,
 			Disclaimer:  DirectionDisclaimer,
 		}},
+		{"Something 10mg tid ad lib", &Direction{
+			Name:        "Something",
+			PeriodHours: 8,
+			Dosage:      10,
+			DosageUnit:  "mg",
+			Flags:       []DirectionFlag{DirectionFlagAdLib},
+			OptSchedule: OptScheduleDefault,
+			Disclaimer:  DirectionDisclaimer,
+		}},
 		{"Hydroxyzine 50mg qid prn sched(whole)", &Direction{
 			Name:        "Hydroxyzine",
 			PeriodHours: 6,
