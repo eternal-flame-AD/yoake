@@ -100,6 +100,9 @@ func Middleware(store sessions.Store) echo.MiddlewareFunc {
 			sess.Options = &sessions.Options{
 				Path:     "/",
 				HttpOnly: true,
+				SameSite: http.SameSiteStrictMode,
+				Secure:   config.Config().Listen.Ssl.Use,
+				MaxAge:   config.Config().Auth.ValidMinutes * 60 * 5,
 			}
 
 			var auth RequestAuth
@@ -137,6 +140,7 @@ func issueSession(c echo.Context, period time.Duration, roles []string) error {
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 		Secure:   config.Config().Listen.Ssl.Use,
+		MaxAge:   config.Config().Auth.ValidMinutes * 60 * 5,
 	}
 	if period == 0 {
 		period = time.Duration(config.Config().Auth.ValidMinutes) * time.Minute
