@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/alexedwards/argon2id"
@@ -184,6 +185,7 @@ func Register(g *echo.Group) (err error) {
 		}
 		var verifiedOtpPubId string
 		if form.OtpResponse != "" {
+			form.OtpResponse = strings.TrimSpace(form.OtpResponse)
 			if yubiAuth == nil {
 				return echo.NewHTTPError(http.StatusNotImplemented, "Yubikey authentication not configured")
 			}
