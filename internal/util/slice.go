@@ -31,3 +31,11 @@ func AntiJoin[T comparable](a []T, b []T) []T {
 	}
 	return result
 }
+
+func Reverse[T any](a []T) []T {
+	var result []T
+	for i := len(a) - 1; i >= 0; i-- {
+		result = append(result, a[i])
+	}
+	return result
+}

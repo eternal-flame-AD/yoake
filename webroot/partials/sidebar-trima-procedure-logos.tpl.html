@@ -1,3 +1,7 @@
+{{ $size := 50 }}
+{{ if . }}
+{{ $size = .}}
+{{ end }}
 {{range $key, $name:= (parse_json `
 {
 "ineligible": "icon_t_vista_procedure_ineligible.gif",
@@ -11,7 +15,8 @@
 "icon_t_vista_procedure_valid.gif"
 }
 `)}}
-<img aria-hidden="true" class="trima-procedure trima-procedure-{{$key}}" src={{ trima_img $name "url" }}>
+<img aria-hidden="true" style="height:{{$size}};width:{{$size}};" class="trima-procedure trima-procedure-{{$key}}"
+    src={{ trima_img $name "url" }}>
 
 
 {{ end }}

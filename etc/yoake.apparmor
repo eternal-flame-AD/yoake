@@ -1,0 +1,42 @@
+# Last Modified: Fri Nov 11 17:59:18 2022
+abi <abi/3.0>,
+
+include <tunables/global>
+
+@{YOAKE}="/var/lib/caddy/yoake"
+
+@{YOAKE_DATA}="/var/lib/caddy/yoake.badger"
+
+profile yoake @{YOAKE}/server {
+  include <abstractions/base>
+  include <abstractions/nameservice>
+  include <abstractions/apparmor_api/introspect>
+  ^ssl { 
+    include <abstractions/base>
+    include <abstractions/ssl_certs>
+    include <abstractions/ssl_keys> 
+    include <abstractions/apparmor_api/introspect>
+  }
+  /sys/kernel/mm/transparent_hugepage/* r,
+  /proc/sys/net/core/somaxconn r,
+  @{YOAKE}/server mr,
+  @{YOAKE}/** r,
+  @{YOAKE_DATA}/ rwk,
+  @{YOAKE_DATA}/** rwlk,
+  capability net_bind_service,
+  signal send peer=yoake//serve,
+  
+  ^serve flags=(kill) {
+    include <abstractions/base>
+    include <abstractions/nameservice>
+    include <abstractions/apparmor_api/introspect>
+
+    /sys/kernel/mm/transparent_hugepage/ r,
+    @{YOAKE}/server mr,
+    @{YOAKE}/ r,
+    @{YOAKE}/{assets,webroot}/** r,
+    @{YOAKE_DATA}/ rwk,
+    @{YOAKE_DATA}/** rwlk,
+    signal receive peer=yoake,
+  }    
+}

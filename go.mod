@@ -6,12 +6,16 @@ require (
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387
+	github.com/dgraph-io/badger/v3 v3.2103.4
+	github.com/eternal-flame-AD/go-apparmor v0.0.3
 	github.com/eternal-flame-AD/yubigo v0.0.0-20221005082707-ce0c8989e8b1
 	github.com/gomarkdown/markdown v0.0.0-20221013030248-663e2500819c
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/context v1.1.1
 	github.com/gorilla/sessions v1.2.1
 	github.com/jinzhu/configor v1.2.1
 	github.com/labstack/echo/v4 v4.9.1
+	github.com/stretchr/testify v1.8.1
 	github.com/twilio/twilio-go v1.1.1
 	github.com/vanng822/go-premailer v1.20.1
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
@@ -22,11 +26,9 @@ require (
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
-	github.com/dgraph-io/badger/v3 v3.2103.4 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
-	github.com/duo-labs/webauthn v0.0.0-20220815211337-00c9fb5711f5 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
-	github.com/eternal-flame-AD/go-apparmor v0.0.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
@@ -43,7 +45,7 @@ require (
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/stretchr/testify v1.8.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/vanng822/css v1.0.1 // indirect
@@ -56,4 +58,5 @@ require (
 	google.golang.org/protobuf v1.26.0 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

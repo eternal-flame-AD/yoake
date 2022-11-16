@@ -229,7 +229,7 @@ func registerYoutube(g *echo.Group, database db.DB) {
 		defer txn.txn.Discard()
 
 		categories, err := txn.GetCategories()
-		if err != nil {
+		if err != nil && !db.IsNotFound(err) {
 			return err
 		}
 		return c.JSON(http.StatusOK, categories)

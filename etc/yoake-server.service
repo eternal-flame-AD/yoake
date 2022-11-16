@@ -8,6 +8,7 @@ WorkingDirectory=/var/lib/caddy/yoake
 ExecStart=/var/lib/caddy/yoake/server
 Restart=always
 AmbientCapabilities=CAP_NET_BIND_SERVICE
+AppArmorProfile=yoake
 
 [Install]
 WantedBy=multi-user.target

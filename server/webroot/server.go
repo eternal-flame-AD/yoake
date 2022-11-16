@@ -12,6 +12,7 @@ import (
 	"github.com/eternal-flame-AD/yoake/internal/db"
 	"github.com/eternal-flame-AD/yoake/internal/echoerror"
 	"github.com/eternal-flame-AD/yoake/internal/entertainment"
+	"github.com/eternal-flame-AD/yoake/internal/health"
 	"github.com/eternal-flame-AD/yoake/internal/servetpl"
 	"github.com/eternal-flame-AD/yoake/internal/session"
 	"github.com/eternal-flame-AD/yoake/internal/twilio"
@@ -70,6 +71,7 @@ func Init(hostname string, comm *comm.Communicator, database db.DB) {
 		comm.RegisterAPIRoute(api.Group("/comm", logMiddleware("api_comm", nil)))
 		auth.Register(api.Group("/auth", logMiddleware("api_auth", nil)))
 		entertainment.Register(api.Group("/entertainment", logMiddleware("api_entertainment", nil)), database)
+		health.Register(api.Group("/health", logMiddleware("api_health", nil)), database, comm)
 	}
 
 	e.Use(

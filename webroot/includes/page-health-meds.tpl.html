@@ -1,0 +1,472 @@
+<h1 class="page-header">Med Compliance</h1>
+
+<div class="contianer">
+    <div class="row p-2">
+        <div class="col">
+            <div class="card border">
+                <div class="card-header">
+                    <h3 class="card-title">Directions</h3>
+                </div>
+                <div class="card-body">
+                    <style>
+                        .med-timeline {
+                            height: 2.5rem;
+                            flex-shrink: 3;
+                        }
+
+                        .med-title {
+                            flex-grow: 1;
+                            min-width: 40%;
+                        }
+                    </style>
+                    <div class="accordion" id="med-directions-accordion">
+                        <div class="accordion-item d-none" id="med-direction-accordion-tpl" data-weight="0">
+                            <h2 class="accordion-header trima-procedure-hidden">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    style="flex-wrap: wrap">
+                                    <span class="accordion-icon">
+                                        {{template "/partials/sidebar-trima-procedure-logos.tpl.html" "1.25rem" }}
+                                        &nbsp;
+                                    </span>
+                                    <span class="med-title accordion-title">
+                                        <div class="fw-bold">$name</div>
+                                        <div>900mg PO qHS</div>
+                                    </span>
+                                    <svg id="timeline-tpl" class="med-timeline d-none" viewbox="0 0 300 20"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <polygon class="arrow-flipped d-none" points="3,0 10,7 17,0" fill="" />
+                                        <rect class="bar" width="280" x="10" y="7" height="6" fill="#8A6BBE" />
+                                        <line class="line d-none" x1="10" y1="0" x2="10" y2="20" stroke="#373C38"
+                                            stroke-width="1" />
+                                        <polygon class="arrow d-none" points="3,20 10,14 17,20" fill="#58B2DC" />
+                                    </svg>
+                                </button>
+
+                            </h2>
+                            <div class="accordion-collapse collapse show">
+                                <div class="px-2 py-2 px-lg-5">
+                                </div>
+                                <div class="p-2">
+                                    <form class="med-take-form px-3">
+                                        <div class="row g-3 align-items-center">
+                                            <div class="col-auto">
+                                                <label for="dosage" class="form-label">Dosage Taken: </label>
+                                            </div>
+                                            <div class="col-auto">
+                                                <input type="number" class="form-control" id="dosage">
+                                            </div>
+                                            <div class="col-auto">
+                                                <input type="submit" class="btn btn-primary mt-2" value="Submit">
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="p-2">
+
+                                    <h5>History</h5>
+                                    <div class="p-2 table-responsive" style="height:20em;overflow-y:scroll;">
+                                        <table class="table table-striped compliance-log">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Time</th>
+                                                    <th scope="col">Dose</th>
+                                                    <th scope="col">Offset</th>
+                                                    <th scope="col">Offset (7 day)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr class="placeholder">
+                                                    <th class="placeholder">Loading...</th>
+                                                    <td class="placeholder"></td>
+                                                    <td class="placeholder"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row p-2">
+        <div class="col">
+            <div class="card border">
+                <div class="card-header">
+                    <h3 class="card-title">Manage</h3>
+                </div>
+                <div class="card-body">
+                    <form id="addMed" autocomplete="off">
+                        <div class="mb-3">
+                            <label id="med-shorthand-input" for="shorthand" class="form-label">Shorthand</label>
+                            <input type="text" class="form-control" id="shorthand"
+                                placeholder="Atorvastatin 10mg TAB 20mg PO qAM">
+
+                            <label for="name" class="form-label">Name: </label>
+                            <input type="text" class="form-control" id="name" placeholder="Atorvastatin 10mg TAB">
+                            <label for="dosage" class="form-label">Dosage: </label>
+                            <input type="number" class="form-control" id="dosage" placeholder="20">
+                            <label for="dosage_unit" class="form-label">Dosage Unit: </label>
+                            <input type="text" class="form-control" id="dosage_unit" placeholder="mg">
+                            <label for="dosage_route" class="form-label">Dosage Route: </label>
+                            <input type="text" class="form-control" id="dosage_route" placeholder="PO">
+                            <label for="period_hours" class="form-label">Period (Hours): </label>
+                            <input type="number" class="form-control" id="period_hours" placeholder="24">
+                        </div>
+                        <div class="mb-3">
+                            <label for="flags" class="form-label">Flags:</label>
+
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" class="form-check-input" id="flags-qam" name="qAM" value="qam">
+                                <label for="flags-qam" class="form-check-label">qAM</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" class="form-check-input" id="flags-qhs" name="qHS" value="qhs">
+                                <label for="flags-qhs" class="form-check-label">qHS</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="checkbox" class="form-check-input" id="flags-prn" name="PRN" value="prn">
+                                <label for="flags-prn" class="form-check-label">PRN</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="flags" class="form-label">Schedule:</label>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" class="form-check-input" id="schedule-default" name="schedule"
+                                    value="default">
+                                <label for="schedule-default" class="form-check-label">Default</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input type="radio" class="form-check-input" id="schedule-whole" name="schedule"
+                                    value="whole">
+                                <label for="schedule-whole" class="form-check-label">Whole Dose</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Submit</button>
+
+                    </form>
+                    <script>
+                        $("#addMed #shorthand").on('change', function () {
+                            let shorthand = $(this).val();
+                            $.ajax({
+                                url: "/api/health/meds/shorthand/parse?shorthand=" + encodeURIComponent(shorthand),
+                                success: function (data) {
+                                    $("#addMed #name").val(data.name);
+                                    $("#addMed #dosage").val(data.dosage);
+                                    $("#addMed #dosage_unit").val(data.dosage_unit);
+                                    $("#addMed #dosage_route").val(data.dosage_route);
+                                    $("#addMed #period_hours").val(data.period_hours);
+                                    $("#addMed #flags-qam").prop("checked", data.flags.includes("qam"));
+                                    $("#addMed #flags-qhs").prop("checked", data.flags.includes("qhs"));
+                                    $("#addMed #flags-prn").prop("checked", data.flags.includes("prn"));
+                                    $("#addMed #schedule-default").prop("checked", data.schedule == "default");
+                                    $("#addMed #schedule-whole").prop("checked", data.schedule == "whole");
+                                }
+
+                            })
+                        });
+                        $("#addMed").on("submit", function (e) {
+                            e.preventDefault();
+
+                            let name = $("#addMed #name").val();
+                            let dosage = $("#addMed #dosage").val();
+                            let dosage_unit = $("#addMed #dosage_unit").val();
+                            let dosage_route = $("#addMed #dosage_route").val();
+                            let period_hours = $("#addMed #period_hours").val();
+                            let flags = [];
+                            if ($("#addMed #flags-qam").prop("checked")) {
+                                flags.push("qam");
+                            }
+                            if ($("#addMed #flags-qhs").prop("checked")) {
+                                flags.push("qhs");
+                            }
+                            if ($("#addMed #flags-prn").prop("checked")) {
+                                flags.push("prn");
+                            }
+                            let schedule = $("#addMed input[name=schedule]:checked").val();
+                            $.ajax({
+                                url: "/api/health/meds/directions",
+                                method: "POST",
+                                contentType: "application/json",
+                                data: JSON.stringify({
+                                    name: name,
+                                    dosage: parseInt(dosage),
+                                    dosage_unit: dosage_unit,
+                                    dosage_route: dosage_route,
+                                    period_hours: parseInt(period_hours),
+                                    flags: flags,
+                                    schedule: schedule
+                                }),
+                                success: function (data) {
+                                    window.location.reload();
+                                },
+                            })
+                        })
+                    </script>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+        (() => {
+            "use strict";
+            const medKeyName = name =>
+                name.split(" ")[0].toLowerCase();
+
+            const dirAccEl = document.getElementById("med-directions-accordion")
+            const dirAccTpl = document.getElementById("med-direction-accordion-tpl")
+
+            let accByMeds = {};
+
+            const writeAccordion = async (medList, initial) => {
+                await Promise.all(
+                    medList.map(med => new Promise((resolve, reject) => {
+                        {
+                            const prn = med.flags.includes("prn");
+                            let id = "med-direction-accordion-" + med.name
+                            let accEl = document.getElementById(id)
+                            if (!accEl) {
+                                accEl = dirAccTpl.cloneNode(true)
+                                accEl.id = id
+                            }
+                            const medTakeForm = accEl.querySelector(".med-take-form")
+                            medTakeForm.querySelector("input#dosage").value = med.dosage
+                            const medTimeline = (() => {
+                                let timeline = accEl.querySelector("#timeline")
+                                const medTimelineTpl = accEl.querySelector("#timeline-tpl")
+                                if (timeline) {
+                                    timeline.parentElement.removeChild(timeline)
+                                }
+                                timeline = medTimelineTpl.cloneNode(true)
+                                medTimelineTpl.parentElement.append(timeline)
+                                timeline.id = "timeline"
+                                timeline.classList.remove("d-none")
+                                return timeline
+                            })()
+                            medTakeForm.onsubmit = e => {
+                                e.preventDefault();
+                                let dosage = medTakeForm.querySelector("input#dosage").value
+                                if (confirm("Really Submit?"))
+                                    $.ajax({
+                                        url: "/api/health/meds/compliance/log",
+                                        method: "POST",
+                                        contentType: "application/json",
+                                        data: JSON.stringify({
+                                            med_keyname: medKeyName(med.name),
+                                            actual: {
+                                                time: dayjs().format(),
+                                                dose: parseInt(dosage)
+                                            },
+                                        }),
+                                        success: function (data) {
+                                            window.location.reload();
+                                        },
+                                    })
+                            }
+                            accByMeds[medKeyName(med.name)] = accEl
+                            accEl.id = "med-direction-accordion-" + med.name
+                            let title = accEl.querySelector(".accordion-title")
+                            title.querySelector("div:first-child").innerText = med.name
+                            title.querySelector("div:last-child").innerText = med.shorthand
+                            const bodyId = accEl.querySelector(".accordion-collapse").id = "med-direction-body-" + medKeyName(med.name)
+                            accEl.querySelector(".accordion-button").setAttribute("data-bs-target", "#" + bodyId)
+                            accEl.querySelector(".accordion-button").setAttribute("aria-controls", bodyId)
+
+                            $.ajax({
+                                url: "/api/health/meds/compliance/med/" + medKeyName(med.name) + "/project",
+                                type: "GET",
+                                dataType: "json",
+                                error: function (xhr, status, error) {
+                                    reject(error)
+                                },
+                                success: function (data) {
+                                    let icon = accEl.querySelector(".accordion-icon")
+                                    let important = false
+                                    let available = false
+                                    icon.setAttribute("class", "accordion-icon")
+                                    if (data.dose_offset < -0.2 || dayjs().isAfter(dayjs(data.expected.time).add(1, "day"))) {
+                                        accEl.setAttribute("data-weight", prn ? 5 : 15)
+                                        icon.classList.add("trima-procedure-ineligible")
+                                    } else if (data.dose_offset >= 0 && !prn) {
+                                        available = true
+                                        accEl.setAttribute("data-weight", 50)
+                                        important = true
+                                        icon.classList.add("trima-procedure-optimal")
+                                    } else {
+                                        available = true
+                                        accEl.setAttribute("data-weight", prn ? 10 : 20)
+                                        icon.classList.add("trima-procedure-valid")
+                                    }
+                                    if (initial) {
+                                        accEl.querySelector(".accordion-collapse").classList[important ? "add" : "remove"]("show")
+                                        accEl.querySelector(".accordion-button").classList[important ? "remove" : "add"]("collapsed")
+                                    }
+
+                                    medTakeForm.querySelector("input#dosage").value = data.expected.dose
+
+                                    $.ajax({
+                                        url: "/api/health/meds/compliance/med/" + medKeyName(med.name) + "/log",
+                                        type: "GET",
+                                        dataType: "json",
+                                        error: function (xhr, status, error) {
+                                            reject(error)
+                                        },
+                                        success: function (logs) {
+                                            const tbody = accEl.querySelector(".compliance-log tbody");
+                                            tbody.innerHTML = "";
+                                            let projectedTr = document.createElement("tr");
+                                            projectedTr.classList.add("table-primary");
+                                            projectedTr.innerHTML = `<th scope="row"></th><td></td><td></td><td></td>`;
+                                            labelTimeElement(projectedTr.children[0], data.expected.time);
+                                            projectedTr.children[1].innerText = `${data.expected.dose} ${med.dosage_unit} (${prn ? "available" : "scheduled"})`;
+                                            tbody.appendChild(projectedTr);
+
+                                            logs.forEach(log => {
+                                                const tr = document.createElement("tr");
+                                                tr.innerHTML = `<th scope="row"></th><td></td><td></td><td></td>`;
+                                                labelTimeElement(tr.children[0], log.actual.time)
+                                                tr.children[1].innerText = `${log.actual.dose}/${log.expected.dose} ${med.dosage_unit}`;
+                                                if (log.actual.dose !== log.expected.dose) {
+                                                    tr.children[1].classList.add("table-warning");
+                                                } else {
+                                                    tr.children[1].classList.add("table-success");
+                                                }
+                                                tr.children[2].innerText = log.dose_offset.toFixed(2);
+                                                if (Math.abs(log.dose_offset) > 1) {
+                                                    tr.children[2].classList.add("table-danger");
+                                                } else if (Math.abs(log.dose_offset) > 0.5) {
+                                                    tr.children[2].classList.add("table-warning");
+                                                } else {
+                                                    tr.children[2].classList.add("table-success");
+                                                }
+
+                                                // compute 7 day offset
+                                                const weekFrom = dayjs(log.actual.time).subtract(7, 'day')
+                                                let offset = 0
+                                                logs.forEach(log => {
+                                                    if (dayjs(log.actual.time).isAfter(weekFrom)) {
+                                                        offset += log.dose_offset
+                                                    }
+                                                })
+
+                                                tr.children[3].innerText = offset.toFixed(2);
+                                                if (Math.abs(offset) > 1) {
+                                                    tr.children[3].classList.add("table-danger");
+                                                } else if (Math.abs(offset) > 0.5) {
+                                                    tr.children[3].classList.add("table-warning");
+                                                } else {
+                                                    tr.children[3].classList.add("table-success");
+                                                }
+                                                tbody.appendChild(tr);
+                                            });
+
+                                            // compute timeline
+                                            const timelineStart = dayjs().subtract(med.period_hours * 3, 'hour')
+                                            const timelineEnd = dayjs().add(med.period_hours, 'hour')
+                                            let timelineDoses = [
+                                                { "type": "now", "time": dayjs(), "dose": 0 },
+                                            ]
+                                            if (!(prn && available)) {
+                                                timelineDoses.push({ "type": "projected", "time": data.expected.time, "dose": data.expected.dose })
+                                            }
+
+                                            logs.forEach(log => {
+                                                timelineDoses.push({ "type": "actual", "time": log.actual.time, "dose": log.actual.dose })
+                                                timelineDoses.push({ "type": "expected", "time": log.expected.time, "dose": log.expected.dose })
+                                            })
+
+                                            if (prn)
+                                                $(medTimeline).find(".bar").attr("fill", "#B19693");
+
+                                            timelineDoses = timelineDoses.map(dose => {
+                                                dose.time = dayjs(dose.time)
+                                                dose.timerel = dose.time.diff(timelineStart) / timelineEnd.diff(timelineStart)
+                                                return dose
+                                            }).filter(dose => {
+                                                return dose.time.isAfter(timelineStart) && dose.time.isBefore(timelineEnd)
+                                            }).forEach(dose => {
+                                                console.log(dose)
+                                                let baseClass = ""
+                                                let fill = ""
+
+                                                switch (dose.type) {
+                                                    case "projected":
+                                                        baseClass = "arrow-flipped"
+                                                        fill = "#ECB88A"
+                                                        break
+                                                    case "actual":
+                                                        baseClass = "arrow"
+                                                        fill = "#7BA23F"
+                                                        break
+                                                    case "expected":
+                                                        baseClass = "arrow-flipped"
+                                                        fill = "#58B2DC"
+                                                        break
+                                                    case "now":
+                                                        baseClass = "line"
+                                                        fill = ""
+                                                        break
+                                                }
+                                                let arrow = $("." + baseClass).clone()
+                                                if (fill)
+                                                    arrow.attr("fill", fill)
+                                                arrow.removeClass("d-none")
+                                                const fullrange = 280
+                                                arrow.attr("transform", "translate(" + (dose.timerel * fullrange) + ", 0)")
+                                                $(medTimeline).append(arrow)
+                                            })
+
+                                            accEl.classList.remove("d-none")
+                                            let inserted = false
+                                            for (const node of dirAccEl.children) {
+                                                if (node.classList.contains("accordion-item"))
+                                                    if (parseInt(node.getAttribute("data-weight")) <
+                                                        parseInt(accEl.getAttribute("data-weight"))) {
+                                                        dirAccEl.insertBefore(accEl, node)
+                                                        inserted = true
+                                                        break;
+                                                    }
+                                            }
+                                            if (!inserted) {
+                                                dirAccEl.appendChild(accEl)
+                                            }
+
+                                            resolve()
+                                        }
+                                    })
+                                }
+
+                            })
+                        }
+
+                    }))
+                )
+            }
+
+            let updateTimer;
+            document.addEventListener("sidebar-activate", e => {
+                if (e.detail.page == "health-meds") {
+                    $.ajax({
+                        url: "/api/health/meds/directions",
+                        type: "GET",
+                        dataType: "json",
+                        success: function (data) {
+                            writeAccordion(data, true).then(() => {
+                                updateTimer = setInterval(() => writeAccordion(data).catch(err => {
+                                    throw err
+                                }), 300 * 1000)
+                            })
+                        }
+                    })
+                } else {
+                    clearInterval(updateTimer);
+                }
+            })
+        })()
+</script>
