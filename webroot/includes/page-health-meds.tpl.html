@@ -56,6 +56,20 @@
                                                 <input type="number" class="form-control" id="dosage">
                                             </div>
                                             <div class="col-auto">
+                                                <label for="time" class="form-label">Time Override: </label>
+                                            </div>
+
+                                            <div class="col-auto">
+                                                <div class="input-group">
+                                                    <span class="input-group-text">
+                                                        <input type="checkbox" class="form-check-input"
+                                                            id="time-override">
+                                                    </span>
+                                                    <input type="datetime-local" class="form-control" id="time">
+
+                                                </div>
+                                            </div>
+                                            <div class="col-auto">
                                                 <input type="submit" class="btn btn-primary mt-2" value="Submit">
                                             </div>
                                         </div>
@@ -262,6 +276,7 @@
                             medTakeForm.onsubmit = e => {
                                 e.preventDefault();
                                 let dosage = medTakeForm.querySelector("input#dosage").value
+                                let time = medTakeForm.querySelector("input#time").value
                                 if (confirm("Really Submit?"))
                                     $.ajax({
                                         url: "/api/health/meds/compliance/log",
@@ -270,7 +285,7 @@
                                         data: JSON.stringify({
                                             med_keyname: medKeyName(med.name),
                                             actual: {
-                                                time: dayjs().format(),
+                                                time: dayjs(time || undefined).format(),
                                                 dose: parseInt(dosage)
                                             },
                                         }),
@@ -319,7 +334,35 @@
                                     }
 
                                     medTakeForm.querySelector("input#dosage").value = data.expected.dose
-
+                                    medTakeForm.querySelector("input#time").onkeyup =
+                                        medTakeForm.querySelector("input#time").onchange =
+                                        e => {
+                                            const target = e.target
+                                            if (target.validity.badInput || dayjs(target.value) > dayjs()) {
+                                                target.classList.add("text-danger")
+                                                target.classList.remove("text-success")
+                                                medTakeForm.querySelector("input[type=submit]").disabled = true
+                                            } else if (target.value == "") {
+                                                target.classList.remove("text-danger")
+                                                target.classList.remove("text-success")
+                                                medTakeForm.querySelector("input[type=submit]").disabled = false
+                                            } else if (dayjs(target.value).isValid()) {
+                                                target.classList.remove("text-danger")
+                                                target.classList.add("text-success")
+                                                medTakeForm.querySelector("input[type=submit]").disabled = false
+                                            }
+                                        }
+                                    medTakeForm.querySelector("input#time-override").onchange = e => {
+                                        const target = e.target
+                                        if (target.checked) {
+                                            medTakeForm.querySelector("input#time").disabled = false
+                                            medTakeForm.querySelector("input#time").value = dayjs().format("YYYY-MM-DDTHH:mm")
+                                        } else {
+                                            medTakeForm.querySelector("input#time").value = null
+                                            medTakeForm.querySelector("input#time").disabled = true
+                                        }
+                                        medTakeForm.querySelector("input#time").dispatchEvent(new CustomEvent("change"))
+                                    }
                                     $.ajax({
                                         url: "/api/health/meds/compliance/med/" + medKeyName(med.name) + "/log",
                                         type: "GET",

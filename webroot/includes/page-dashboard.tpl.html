@@ -66,11 +66,6 @@
                         <script>
                             (function () {
                                 "use struct";
-                                const dateInZone = (zone) => {
-                                    if (zone)
-                                        return new Date(new Date().toLocaleString("en-US", { timeZone: zone }));
-                                    return new Date()
-                                }
                                 const timeInZone = (zone) => {
                                     const date = dateInZone(zone);
                                     var h = date.getHours(); // 0 - 23
@@ -87,7 +82,7 @@
                                             </p>${zone ? "" : "<hr>"}
                                     `
                                 }
-                                const zones = ["", "America/Los_Angeles", "America/New_York",
+                                const zones = ["", "America/Los_Angeles", "America/New_York", "America/Chicago",
                                     "Asia/Tokyo", "Asia/Shanghai", "UTC"]
                                 let update = () => {
                                     var date = new Date();
