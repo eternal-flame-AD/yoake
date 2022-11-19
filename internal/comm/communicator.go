@@ -61,11 +61,15 @@ func (e ErrorSentWithFallback) Error() string {
 // if the preferred method failed to send the message, fallback methods will be tried,
 // and an ErrorSentWithFabback will be returned if any fallback method succeeded.
 // if fallback methods failed as well the original error will be returned.
-func (c *Communicator) SendGenericMessage(preferredMethod string, message model.GenericMessage) error {
+func (c *Communicator) SendGenericMessage(preferredMethod string, message model.GenericMessage, force bool) error {
 	if preferredMethod == "" {
 		preferredMethod = c.fallbackCommunicators[0]
 	}
 	if origErr := c.actualSendGenericMessage(preferredMethod, message); origErr != nil {
+		if force {
+			log.Printf("Failed to send message using preferred method %s: %v", preferredMethod, origErr)
+			return origErr
+		}
 		log.Printf("Failed to send message using preferred method %s: %v. trying fallback methods", preferredMethod, origErr)
 		for _, fallback := range c.fallbackCommunicators {
 			if fallback == preferredMethod {

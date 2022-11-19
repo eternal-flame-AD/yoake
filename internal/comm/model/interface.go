@@ -16,5 +16,5 @@ type CommMethodWithRoute interface {
 type Communicator interface {
 	GetMethod(method string) CommMethod
 	GetMethodsByMIME(mime string) []CommMethod
-	SendGenericMessage(preferredMethod string, message GenericMessage) error
+	SendGenericMessage(preferredMethod string, message GenericMessage, force bool) error
 }

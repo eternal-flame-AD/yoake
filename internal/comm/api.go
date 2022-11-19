@@ -22,7 +22,7 @@ func (c *Communicator) RegisterAPIRoute(g *echo.Group) {
 			if err := ctx.Bind(&msg); err != nil {
 				return err
 			}
-			if err := c.SendGenericMessage("", msg); err != nil {
+			if err := c.SendGenericMessage("", msg, ctx.QueryParam("force") == "1"); err != nil {
 				return err
 			}
 			return nil
@@ -32,7 +32,7 @@ func (c *Communicator) RegisterAPIRoute(g *echo.Group) {
 			if err := ctx.Bind(&msg); err != nil {
 				return err
 			}
-			if err := c.SendGenericMessage(ctx.Param("method"), msg); err != nil {
+			if err := c.SendGenericMessage(ctx.Param("method"), msg, ctx.QueryParam("force") == "1"); err != nil {
 				return err
 			}
 			return nil

@@ -30,7 +30,7 @@ func (h *Handler) SendGradeMessage(conf config.CanvasLMSMessage) error {
 			Grades:      grades,
 			LastRefresh: h.respCache.requestTime.Format(time.RFC3339),
 		},
-	}); err != nil {
+	}, false); err != nil {
 		log.Printf("error sending grade message: %v", err)
 		return err
 	}

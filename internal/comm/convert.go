@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
-	"log"
 	"path"
 	"strings"
 	textTemplate "text/template"
@@ -77,7 +76,6 @@ func ConvertGenericMessage(msgOrig *model.GenericMessage, supportedMIMES []strin
 					return nil, err
 				}
 			}
-			log.Printf("template name is: %s %s", tpl.Name(), tpl.DefinedTemplates())
 			if err := tpl.ExecuteTemplate(&output, tplName, msgOrig.Context); err != nil {
 				return nil, err
 			}
@@ -97,7 +95,6 @@ func ConvertGenericMessage(msgOrig *model.GenericMessage, supportedMIMES []strin
 					return nil, err
 				}
 			}
-			log.Printf("template name is: %s %s", tpl.Name(), tpl.DefinedTemplates())
 			if err := tpl.ExecuteTemplate(&output, tplName, msgOrig.Context); err != nil {
 				return nil, err
 			}

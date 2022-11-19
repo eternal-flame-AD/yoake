@@ -66,8 +66,9 @@ func NewClient() (*Client, error) {
 
 func (c *Client) SendGenericMessage(gmsg model.GenericMessage) error {
 	msg := Message{
-		Message: gmsg.Body,
-		Title:   gmsg.Subject,
+		Message:  gmsg.Body,
+		Title:    gmsg.Subject,
+		Priority: gmsg.Priority + 5,
 	}
 	msg.Extras.ClientDisplay.ContentType = gmsg.MIME
 	return c.SendMessage(msg)
