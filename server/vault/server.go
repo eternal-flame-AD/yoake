@@ -12,7 +12,6 @@ import (
 
 func Init(hostname string) {
 	e := echo.New()
-	e.Pre(middleware.Logger())
 
 	vaultApiURL, err := url.Parse(config.Config().Upstream.Vault.API)
 	if err != nil {
