@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"runtime/debug"
 
 	"github.com/labstack/echo/v4"
 )
@@ -80,6 +81,15 @@ var (
 func Middleware(errorWriter ErrorWriter) func(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			defer func() {
+				if err := recover(); err != nil {
+					if c.Get("devel") == true {
+						errorWriter(c, fmt.Errorf("panic: %v; stacktrace: %s", err, string(debug.Stack())))
+					} else {
+						errorWriter(c, fmt.Errorf("panic: %v", err))
+					}
+				}
+			}()
 			err := next(c)
 			if err != nil {
 				if errEcho, ok := err.(*echo.HTTPError); ok {

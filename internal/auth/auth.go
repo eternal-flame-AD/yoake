@@ -13,6 +13,7 @@ import (
 	"github.com/alexedwards/argon2id"
 	"github.com/eternal-flame-AD/yoake/config"
 	"github.com/eternal-flame-AD/yoake/internal/echoerror"
+	"github.com/eternal-flame-AD/yoake/internal/util"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -124,6 +125,9 @@ func Middleware(store sessions.Store) echo.MiddlewareFunc {
 				sess.Save(c.Request(), c.Response())
 			} else if auth.Valid {
 				auth.Roles = existingRoles
+			}
+			if util.Contain(auth.Roles, string(RoleAdmin)) {
+				c.Set("devel", true)
 			}
 
 			c.Set("auth_"+AuthSessionName, auth)
