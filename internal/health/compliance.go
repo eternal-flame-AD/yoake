@@ -1,11 +1,14 @@
 package health
 
 import (
+	"encoding/json"
+	"log"
 	"math"
 	"sort"
 	"time"
 
 	"github.com/eternal-flame-AD/yoake/internal/util"
+	"github.com/google/uuid"
 )
 
 type ComplianceLog struct {
@@ -17,7 +20,9 @@ type ComplianceLog struct {
 
 	// 0 = closest to expected time +1 = closest to next expected dose
 	// get a cumsum of this to get a compliance stat
-	DoseOffset float64 `json:"dose_offset"`
+	DoseOffset f64OrNan `json:"dose_offset"`
+
+	EffectiveLastDose *ComplianceLog `json:"effective_last_dose,omitempty"`
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -28,122 +33,124 @@ type ComplianceDoseInfo struct {
 	Dose int       `json:"dose"`
 }
 
-type ComplianceLogList []ComplianceLog
+type f64OrNan float64
 
-func (c ComplianceLogList) ProjectNextDose(dir Direction) (nextDose ComplianceLog) {
-	sort.Sort(c)
-
-	var lastDose ComplianceLog
-	var cumDosage int
-	for ptr := 0; ptr < len(c); ptr++ {
-		if c[ptr].MedKeyname == dir.KeyName() {
-			if dir.OptSchedule == OptScheduleWholeDose {
-				lastDose = c[ptr]
-				break
-			} else {
-				cumDosage += c[ptr].Actual.Dose
-				if cumDosage < dir.Dosage {
-					continue
-				} else {
-					lastDose = c[ptr]
-					break
-				}
-			}
-		}
+func (n *f64OrNan) UnmarshalJSON(b []byte) error {
+	if string(b) == "null" {
+		*n = f64OrNan(math.NaN())
+		return nil
 	}
-	if lastDose.UUID == "" /* not found */ {
-		nextDose = ComplianceLog{
-			MedKeyname: dir.KeyName(),
-			Expected: ComplianceDoseInfo{
-				Time: time.Now(),
-				Dose: dir.Dosage,
-			},
-			Actual: ComplianceDoseInfo{
-				Time: time.Now(),
-				Dose: dir.Dosage,
-			},
-			DoseOffset: 0,
-			CreatedAt:  time.Now(),
-		}
-	} else {
-		nextDose = ComplianceLog{
-			MedKeyname: dir.KeyName(),
-			Expected: ComplianceDoseInfo{
-				Time: lastDose.Actual.Time.Add(time.Duration(dir.PeriodHours) * time.Hour),
-				Dose: dir.Dosage,
-			},
-			Actual: ComplianceDoseInfo{
-				Time: time.Now(),
-				Dose: dir.Dosage,
-			},
-			CreatedAt: time.Now(),
-		}
-		nextDose.DoseOffset, _, _ = c.ComputeDoseOffset(dir, &nextDose)
+	var f float64
+	if err := json.Unmarshal(b, &f); err != nil {
+		return err
 	}
-	return
+	*n = f64OrNan(f)
+	return nil
 }
 
-func (c ComplianceLogList) ComputeDoseOffset(dir Direction, newLog *ComplianceLog) (float64, bool, error) {
-	sort.Sort(c)
+func (n f64OrNan) MarshalJSON() ([]byte, error) {
+	if math.IsNaN(float64(n)) {
+		return []byte("null"), nil
+	}
+	return json.Marshal(float64(n))
+}
 
-	var lastTwoDoses []ComplianceLog
-	if newLog != nil {
-		lastTwoDoses = []ComplianceLog{*newLog}
-	}
-	for ptr := 0; len(lastTwoDoses) < 2 && ptr < len(c); ptr++ {
-		if c[ptr].MedKeyname == dir.KeyName() {
-			if len(lastTwoDoses) == 0 || lastTwoDoses[0].Actual.Time.After(c[ptr].Actual.Time) {
-				lastTwoDoses = append(lastTwoDoses, c[ptr])
-			}
-		}
-	}
-	if newLog != nil {
-		if newLog.Expected.Dose == 0 && dir.KeyName() == newLog.MedKeyname {
-			newLog.Expected.Dose = dir.Dosage
-		}
-		if newLog.Expected.Time.IsZero() {
-			if len(lastTwoDoses) == 2 {
-				newLog.Expected.Time = lastTwoDoses[1].Actual.Time.Add(time.Duration(dir.PeriodHours) * time.Hour)
-			} else {
-				newLog.Expected.Time = newLog.Actual.Time
-			}
-		}
-		lastTwoDoses[0] = *newLog
-	}
-	if len(lastTwoDoses) < 2 {
-		return 0, false, nil
+func doseOffset(dir Direction, this ComplianceLog, last ComplianceLog) float64 {
+	if last.UUID == "" {
+		return math.NaN()
 	}
 
-	// now we have:
-	//             *exp  ~actual
-	//          * ~        ~ *
-	// offset = (new_actual - last_expected) / diff(new_expected, last_actual) - 1
-
-	if lastTwoDoses[0].Actual.Time.IsZero() {
-		lastTwoDoses[0].Actual.Time = time.Now()
-	}
-	offset := float64(lastTwoDoses[0].Actual.Time.Sub(lastTwoDoses[1].Expected.Time))/
-		float64(lastTwoDoses[0].Expected.Time.Sub(lastTwoDoses[1].Actual.Time)) - 1
+	offset := float64(this.Actual.Time.Sub(last.Actual.Time))/
+		float64(time.Duration(dir.PeriodHours)*time.Hour) - 1
 
 	// for prn ignore positive offsets
 	if util.Contain(dir.Flags, DirectionFlagPRN) {
 		if offset > 0 {
-			offset = 0
+			return 0
 		}
 	}
 
 	// ad lib ignore negative offsets
 	if util.Contain(dir.Flags, DirectionFlagAdLib) {
 		if offset < 0 {
-			offset = 0
+			return 0
 		}
 	}
 
-	if math.Abs(offset) > 2 {
-		// stop counting if three or more doses are missed
-		return 0, false, nil
+	return offset
+}
+
+type ComplianceLogList []ComplianceLog
+
+func (c ComplianceLogList) findEffectiveLastDose(dir Direction, this ComplianceLog) ComplianceLog {
+	// for ad lib directions, this finds the last dose
+	// for default scheduling, this find the earliest dose that does not cumulatively exceed a whole dose
+
+	var lastDose ComplianceLog
+	var cumDosage int
+	for ptr := 0; ptr < len(c); ptr++ {
+		if c[ptr].MedKeyname == dir.KeyName() && c[ptr].Actual.Time.Before(this.Actual.Time) {
+			if dir.OptSchedule == OptScheduleWholeDose {
+				return c[ptr]
+			}
+
+			cumDosage += c[ptr].Actual.Dose
+			if cumDosage > dir.Dosage {
+				return lastDose
+			} else if cumDosage == dir.Dosage {
+				return c[ptr]
+			}
+			lastDose = c[ptr]
+
+		}
 	}
-	return offset, true, nil
+	return lastDose
+}
+
+func (c ComplianceLogList) ProjectNextDose(dir Direction) (nextDose ComplianceLog) {
+	tmpUUID := uuid.New().String()
+
+	nextDose = ComplianceLog{
+		UUID:       tmpUUID,
+		MedKeyname: dir.KeyName(),
+		Expected: ComplianceDoseInfo{
+			Time: time.Now(),
+			Dose: dir.Dosage,
+		},
+		Actual: ComplianceDoseInfo{
+			Time: time.Now(),
+			Dose: dir.Dosage,
+		},
+		DoseOffset: 0,
+		CreatedAt:  time.Now(),
+		UpdatedAt:  time.Now(),
+	}
+
+	lastDose := c.findEffectiveLastDose(dir, nextDose)
+	if lastDose.UUID == "" /* not found */ {
+		return
+	}
+
+	nextDose.EffectiveLastDose = &lastDose
+	nextDose.Expected.Time = lastDose.Actual.Time.Add(time.Duration(dir.PeriodHours) * time.Hour)
+	nextDose.DoseOffset = f64OrNan(doseOffset(dir, nextDose, lastDose))
+	return
+}
+
+func (c ComplianceLogList) UpdateDoseOffset(dir Direction) {
+	sort.Sort(c)
+
+	for i := range c {
+		if c[i].MedKeyname == dir.KeyName() {
+			lastDose, thisDose := c.findEffectiveLastDose(dir, c[i]), c[i]
+			if lastDose.UUID == "" /* not found */ {
+				return
+			}
+
+			c[i].DoseOffset = f64OrNan(doseOffset(dir, thisDose, lastDose))
+			log.Printf("thisDose: %+v, \nlastDose: %+v\n-->offset: %f\n", thisDose, lastDose, c[i].DoseOffset)
+		}
+	}
 }
 
 func (c ComplianceLogList) Len() int {

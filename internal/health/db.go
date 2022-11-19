@@ -68,6 +68,45 @@ func DBMedComplianceLogGet(database db.DB, dates util.DateRange) (ComplianceLogL
 	return res, nil
 }
 
+func DBMedComplianceLogAppend(database db.DB, pending ComplianceLogList) error {
+	txn := database.NewTransaction(true)
+	defer txn.Discard()
+
+	for len(pending) > 0 {
+		index := pending[0].Actual.Time.UTC().Format("2006-01")
+		var origLogs ComplianceLogList
+		if err := db.GetJSON(txn, []byte(dbMedComplianceLogPrefix+index), &origLogs); db.IsNotFound(err) {
+			origLogs = []ComplianceLog{}
+		} else if err != nil {
+			return err
+		}
+
+		for i := len(pending) - 1; i >= 0; i-- {
+			if pending[i].Actual.Time.UTC().Format("2006-01") != index {
+				continue
+			}
+			origLogs = append(origLogs, pending[i])
+			pending = append(pending[:i], pending[i+1:]...)
+			uuidMap := make(map[string]int)
+			for j := len(origLogs) - 1; j >= 0; j-- {
+				if _, ok := uuidMap[origLogs[j].UUID]; ok {
+					origLogs = append(origLogs[:j], origLogs[j+1:]...)
+				} else {
+					uuidMap[origLogs[j].UUID] = j
+				}
+			}
+		}
+
+		sort.Sort(origLogs)
+
+		if err := db.SetJSON(txn, []byte(dbMedComplianceLogPrefix+index), origLogs); err != nil {
+			return err
+		}
+	}
+
+	return txn.Commit()
+}
+
 func DBMedComplianceLogSetOne(database db.DB, dir Direction, log *ComplianceLog) error {
 
 	index := log.Actual.Time.UTC().Format("2006-01")
@@ -111,6 +150,7 @@ func DBMedComplianceLogSetOne(database db.DB, dir Direction, log *ComplianceLog)
 				log.UpdatedAt = time.Now()
 				existingLogs[foundIdx] = *log
 			}
+			sort.Sort(existingLogs)
 			if err := db.SetJSON(txn, []byte(dbMedComplianceLogPrefix+index), existingLogs); err != nil {
 				return err
 			}
@@ -131,6 +171,11 @@ func DBMedComplianceLogSetOne(database db.DB, dir Direction, log *ComplianceLog)
 	if log.UUID == "" {
 		log.UUID = uuid.New().String()
 		log.CreatedAt = time.Now()
+		if log.Expected.Dose == 0 {
+			nextDose := existingLogs.ProjectNextDose(dir)
+			log.Expected.Time = nextDose.Expected.Time
+			log.Expected.Dose = nextDose.Expected.Dose
+		}
 	}
 
 	log.UpdatedAt = time.Now()
@@ -142,17 +187,10 @@ func DBMedComplianceLogSetOne(database db.DB, dir Direction, log *ComplianceLog)
 	} else {
 		logs = append(logs, *log)
 	}
-	for i := len(logs) - 1; i >= 0; i-- {
-		offset, upd, err := logs.ComputeDoseOffset(dir, &logs[i])
-		if err != nil {
-			return err
-		}
-		if upd {
-			logs[i].DoseOffset = offset
-		}
-	}
 
+	logs.UpdateDoseOffset(dir)
 	sort.Sort(ComplianceLogList(logs))
+
 	if err := db.SetJSON(txn, []byte(dbMedComplianceLogPrefix+index), logs); err != nil {
 		return err
 	}

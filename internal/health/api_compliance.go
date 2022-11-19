@@ -11,6 +11,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+const yearAbsZero = 2000
+
 func RESTComplianceLogGet(database db.DB) func(c echo.Context) error {
 	return func(c echo.Context) error {
 		filterKeyname := c.Param("med")
@@ -122,5 +124,59 @@ func RESTComplianceLogProjectMed(db db.DB) func(c echo.Context) error {
 		}
 
 		return c.JSON(200, complianceLog.ProjectNextDose(*dir))
+	}
+}
+
+func RESTRecalcMedComplianceLog(db db.DB, writeMutex *sync.Mutex) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		meds, err := DBMedListGet(db)
+		if err != nil {
+			return echoerror.NewHttp(500, err)
+		}
+
+		from := time.Date(yearAbsZero, 1, 1, 0, 0, 0, 0, time.UTC)
+		to := time.Now()
+		if fromStr := c.QueryParam("from"); fromStr != "" {
+			from, err = time.Parse("2006-01", fromStr)
+			if err != nil {
+				return echoerror.NewHttp(400, err)
+			}
+		}
+		if toStr := c.QueryParam("to"); toStr != "" {
+			to, err = time.Parse("2006-01", toStr)
+			if err != nil {
+				return echoerror.NewHttp(400, err)
+			}
+		}
+
+		writeMutex.Lock()
+		defer writeMutex.Unlock()
+		for year := from.Year(); year <= to.Year(); year++ {
+			for month := 1; month <= 12; month++ {
+				if year == from.Year() && month < int(from.Month()) {
+					continue
+				}
+				if year == to.Year() && month > int(to.Month()) {
+					continue
+				}
+
+				log, err := DBMedComplianceLogGet(db, util.DateRangeAround(time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC), 1))
+				if err != nil {
+					return echoerror.NewHttp(500, err)
+				}
+				if len(log) == 0 {
+					continue
+				}
+
+				for _, dir := range meds {
+					log.UpdateDoseOffset(dir)
+				}
+				if err := DBMedComplianceLogAppend(db, log); err != nil {
+					return echoerror.NewHttp(500, err)
+				}
+			}
+		}
+
+		return c.NoContent(204)
 	}
 }

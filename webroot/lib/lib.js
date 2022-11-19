@@ -3,11 +3,11 @@ function doNow(fn) {
     return fn;
 }
 
-function labelTimeElement(tag, time) {
+function labelTimeElement(tag, time, format) {
     time = dayjs(time);
 
-    if (tag.innerText == "")
-        tag.innerText = time.fromNow();
+    if (tag.innerText == "" || format)
+        tag.innerText = format ? time.format(format) : time.fromNow();
     tag.setAttribute("data-bs-toggle", "tooltip");
     tag.setAttribute("data-bs-title", time.format("L LT"));
     new bootstrap.Tooltip(tag);

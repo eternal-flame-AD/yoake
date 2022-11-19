@@ -65,7 +65,8 @@
                                                         <input type="checkbox" class="form-check-input"
                                                             id="time-override">
                                                     </span>
-                                                    <input type="datetime-local" class="form-control" id="time">
+                                                    <input type="datetime-local" class="form-control" id="time"
+                                                        disabled>
 
                                                 </div>
                                             </div>
@@ -78,10 +79,11 @@
                                 <div class="p-2">
 
                                     <h5>History</h5>
-                                    <div class="p-2 table-responsive" style="height:20em;overflow-y:scroll;">
+                                    <div class="p-2 table-responsive" style="height:20em;overflow:scroll;">
                                         <table class="table table-striped compliance-log">
                                             <thead>
                                                 <tr>
+                                                    <th scope="col">Action</th>
                                                     <th scope="col">Time</th>
                                                     <th scope="col">Dose</th>
                                                     <th scope="col">Offset</th>
@@ -91,6 +93,8 @@
                                             <tbody>
                                                 <tr class="placeholder">
                                                     <th class="placeholder">Loading...</th>
+                                                    <td class="placeholder"></td>
+                                                    <td class="placeholder"></td>
                                                     <td class="placeholder"></td>
                                                     <td class="placeholder"></td>
                                                 </tr>
@@ -112,123 +116,236 @@
                     <h3 class="card-title">Manage</h3>
                 </div>
                 <div class="card-body">
-                    <form id="addMed" autocomplete="off">
-                        <div class="mb-3">
-                            <label id="med-shorthand-input" for="shorthand" class="form-label">Shorthand</label>
-                            <input type="text" class="form-control" id="shorthand"
-                                placeholder="Atorvastatin 10mg TAB 20mg PO qAM">
+                    <div class="accordion" id="medManageAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="addMedHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#addMedCollapse" aria-expanded="true"
+                                    aria-controls="addMedCollapse">
+                                    Edit Direction
+                                </button>
+                            </h2>
+                            <div id="addMedCollapse" class="accordion-collapse collapse"
+                                data-bs-parent="#medManageAccordion">
+                                <form id="addMed" autocomplete="off">
+                                    <div class="mb-3">
+                                        <label id="med-shorthand-input" for="shorthand"
+                                            class="form-label">Shorthand</label>
+                                        <input type="text" class="form-control" id="shorthand"
+                                            placeholder="Atorvastatin 10mg TAB 20mg PO qAM">
 
-                            <label for="name" class="form-label">Name: </label>
-                            <input type="text" class="form-control" id="name" placeholder="Atorvastatin 10mg TAB">
-                            <label for="dosage" class="form-label">Dosage: </label>
-                            <input type="number" class="form-control" id="dosage" placeholder="20">
-                            <label for="dosage_unit" class="form-label">Dosage Unit: </label>
-                            <input type="text" class="form-control" id="dosage_unit" placeholder="mg">
-                            <label for="dosage_route" class="form-label">Dosage Route: </label>
-                            <input type="text" class="form-control" id="dosage_route" placeholder="PO">
-                            <label for="period_hours" class="form-label">Period (Hours): </label>
-                            <input type="number" class="form-control" id="period_hours" placeholder="24">
+                                        <label for="name" class="form-label">Name: </label>
+                                        <input type="text" class="form-control" id="name"
+                                            placeholder="Atorvastatin 10mg TAB">
+                                        <label for="dosage" class="form-label">Dosage: </label>
+                                        <input type="number" class="form-control" id="dosage" placeholder="20">
+                                        <label for="dosage_unit" class="form-label">Dosage Unit: </label>
+                                        <input type="text" class="form-control" id="dosage_unit" placeholder="mg">
+                                        <label for="dosage_route" class="form-label">Dosage Route: </label>
+                                        <input type="text" class="form-control" id="dosage_route" placeholder="PO">
+                                        <label for="period_hours" class="form-label">Period (Hours): </label>
+                                        <input type="number" class="form-control" id="period_hours" placeholder="24">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="flags" class="form-label">Flags:</label>
+
+                                        <div class="form-check form-check-inline">
+                                            <input type="checkbox" class="form-check-input" id="flags-qam" name="qAM"
+                                                value="qam">
+                                            <label for="flags-qam" class="form-check-label">qAM</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input type="checkbox" class="form-check-input" id="flags-qhs" name="qHS"
+                                                value="qhs">
+                                            <label for="flags-qhs" class="form-check-label">qHS</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input type="checkbox" class="form-check-input" id="flags-prn" name="PRN"
+                                                value="prn">
+                                            <label for="flags-prn" class="form-check-label">PRN</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input type="checkbox" class="form-check-input" id="flags-adlib"
+                                                name="adlib" value="ad lib">
+                                            <label for="flags-adlib" class="form-check-label">ad lib</label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="flags" class="form-label">Schedule:</label>
+                                        <div class="form-check form-check-inline">
+                                            <input type="radio" class="form-check-input" id="schedule-default"
+                                                name="schedule" value="default">
+                                            <label for="schedule-default" class="form-check-label">Default</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input type="radio" class="form-check-input" id="schedule-whole"
+                                                name="schedule" value="whole">
+                                            <label for="schedule-whole" class="form-check-label">Whole Dose</label>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+
+                                </form>
+                                <script>
+                                    $("#addMed #shorthand").on('change', function () {
+                                        let shorthand = $(this).val();
+                                        $.ajax({
+                                            url: "/api/health/meds/shorthand/parse?shorthand=" + encodeURIComponent(shorthand),
+                                            success: function (data) {
+                                                $("#addMed #name").val(data.name);
+                                                $("#addMed #dosage").val(data.dosage);
+                                                $("#addMed #dosage_unit").val(data.dosage_unit);
+                                                $("#addMed #dosage_route").val(data.dosage_route);
+                                                $("#addMed #period_hours").val(data.period_hours);
+                                                $("#addMed #flags-qam").prop("checked", data.flags.includes("qam"));
+                                                $("#addMed #flags-qhs").prop("checked", data.flags.includes("qhs"));
+                                                $("#addMed #flags-prn").prop("checked", data.flags.includes("prn"));
+                                                $("#addMed #flags-adlib").prop("checked", data.flags.includes("ad lib"));
+                                                $("#addMed #schedule-default").prop("checked", data.schedule == "default");
+                                                $("#addMed #schedule-whole").prop("checked", data.schedule == "whole");
+                                            }
+
+                                        })
+                                    });
+                                    $("#addMed").on("submit", function (e) {
+                                        e.preventDefault();
+
+                                        let name = $("#addMed #name").val();
+                                        let dosage = $("#addMed #dosage").val();
+                                        let dosage_unit = $("#addMed #dosage_unit").val();
+                                        let dosage_route = $("#addMed #dosage_route").val();
+                                        let period_hours = $("#addMed #period_hours").val();
+                                        let flags = [];
+                                        if ($("#addMed #flags-qam").prop("checked")) {
+                                            flags.push("qam");
+                                        }
+                                        if ($("#addMed #flags-qhs").prop("checked")) {
+                                            flags.push("qhs");
+                                        }
+                                        if ($("#addMed #flags-prn").prop("checked")) {
+                                            flags.push("prn");
+                                        }
+                                        if ($("#addMed #flags-adlib").prop("checked")) {
+                                            flags.push("ad lib");
+                                        }
+                                        let schedule = $("#addMed input[name=schedule]:checked").val();
+                                        $.ajax({
+                                            url: "/api/health/meds/directions",
+                                            method: "POST",
+                                            contentType: "application/json",
+                                            data: JSON.stringify({
+                                                name: name,
+                                                dosage: parseInt(dosage),
+                                                dosage_unit: dosage_unit,
+                                                dosage_route: dosage_route,
+                                                period_hours: parseInt(period_hours),
+                                                flags: flags,
+                                                schedule: schedule
+                                            }),
+                                            success: function (data) {
+                                                window.location.reload();
+                                            },
+                                        })
+                                    })
+                                </script>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="flags" class="form-label">Flags:</label>
 
-                            <div class="form-check form-check-inline">
-                                <input type="checkbox" class="form-check-input" id="flags-qam" name="qAM" value="qam">
-                                <label for="flags-qam" class="form-check-label">qAM</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input type="checkbox" class="form-check-input" id="flags-qhs" name="qHS" value="qhs">
-                                <label for="flags-qhs" class="form-check-label">qHS</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input type="checkbox" class="form-check-input" id="flags-prn" name="PRN" value="prn">
-                                <label for="flags-prn" class="form-check-label">PRN</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input type="checkbox" class="form-check-input" id="flags-adlib" name="adlib"
-                                    value="ad lib">
-                                <label for="flags-adlib" class="form-check-label">ad lib</label>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="medManageLog">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#medManageLogCollapse" aria-expanded="false"
+                                    aria-controls="medManageLogCollapse">
+                                    Manage Medication Log
+                                </button>
+                            </h2>
+                            <div id="medManageLogCollapse" class="accordion-collapse collapse"
+                                data-bs-parent="#medManageAccordion">
+                                <form id="editMedLog" autocomplete="off">
+                                    <div class="mb-3">
+                                        <label id="log-keyname-input" for="shorthand" class="form-label">Med Key
+                                            name:</label>
+                                        <input type="text" class="form-control" id="key-name"
+                                            placeholder="atorvastatin">
+
+                                        <label for="uuid" class="form-label">Dose UUID:</label>
+
+                                        <input type="text" class="form-control" id="uuid" placeholder="UUID">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="expected-time" class="form-label">Expected Time:</label>
+                                        <input type="datetime-local" class="form-control" id="expected-time"
+                                            placeholder="2021-01-01T00:00:00">
+                                        <label for="expected-dose" class="form-label">Expected Dose:</label>
+                                        <input type="text" class="form-control" id="expected-dose" placeholder="10">
+                                    </div>
+
+                                    <label for="dose-offset" class="form-label">Dose Offset:</label>
+                                    <input type="text" class="form-control" id="dose-offset" placeholder="+0.1">
+
+                                    <div class="mb-3">
+                                        <label for="actual-time" class="form-label">Actual Time:</label>
+                                        <input type="datetime-local" class="form-control" id="actual-time"
+                                            placeholder="2021-01-01T00:00:00">
+                                        <label for="actual-dose" class="form-label">Actual Dose:</label>
+                                        <input type="text" class="form-control" id="actual-dose" placeholder="10">
+
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+
+                                </form>
+                                <script>
+                                        (() => {
+
+                                            window.loadMedLogForm = log => {
+                                                const form = $("#editMedLog");
+                                                form.find("#key-name").val(log.med_keyname);
+                                                form.find("#uuid").val(log.uuid);
+                                                form.find("#expected-time").val(dayjs(log.expected.time).format("YYYY-MM-DDTHH:mm:ss"));
+                                                form.find("#expected-dose").val(log.expected.dose);
+                                                form.find("#dose-offset").val(log.dose_offset);
+                                                form.find("#actual-time").val(dayjs(log.actual.time).format("YYYY-MM-DDTHH:mm:ss"));
+                                                form.find("#actual-dose").val(log.actual.dose);
+                                            }
+                                            document.getElementById("editMedLog").onsubmit = function (e) {
+                                                e.preventDefault();
+
+                                                const form = $("#editMedLog");
+                                                data = {
+                                                    med_keyname: form.find("#key-name").val(),
+                                                    uuid: form.find("#uuid").val(),
+                                                    expected: {
+                                                        time: form.find("#expected-time").valueAsDate,
+                                                        dose: parseInt(form.find("#expected-dose").val())
+                                                    },
+                                                    dose_offset: parseFloat(form.find("#dose-offset").val()),
+                                                    actual: {
+                                                        time: form.find("#actual-time")[0].valueAsDate,
+                                                        dose: parseInt(form.find("#actual-dose").val())
+                                                    }
+                                                }
+
+                                                $.ajax({
+                                                    url: "/api/health/meds/compliance/log",
+                                                    method: "POST",
+                                                    contentType: "application/json",
+                                                    data: JSON.stringify(data),
+                                                    success: function (data) {
+                                                        window.location.reload();
+                                                    },
+                                                })
+                                            }
+
+                                        })()
+                                </script>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="flags" class="form-label">Schedule:</label>
-                            <div class="form-check form-check-inline">
-                                <input type="radio" class="form-check-input" id="schedule-default" name="schedule"
-                                    value="default">
-                                <label for="schedule-default" class="form-check-label">Default</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input type="radio" class="form-check-input" id="schedule-whole" name="schedule"
-                                    value="whole">
-                                <label for="schedule-whole" class="form-check-label">Whole Dose</label>
-                            </div>
-                        </div>
+                    </div>
 
-                        <button type="submit" class="btn btn-primary">Submit</button>
 
-                    </form>
-                    <script>
-                        $("#addMed #shorthand").on('change', function () {
-                            let shorthand = $(this).val();
-                            $.ajax({
-                                url: "/api/health/meds/shorthand/parse?shorthand=" + encodeURIComponent(shorthand),
-                                success: function (data) {
-                                    $("#addMed #name").val(data.name);
-                                    $("#addMed #dosage").val(data.dosage);
-                                    $("#addMed #dosage_unit").val(data.dosage_unit);
-                                    $("#addMed #dosage_route").val(data.dosage_route);
-                                    $("#addMed #period_hours").val(data.period_hours);
-                                    $("#addMed #flags-qam").prop("checked", data.flags.includes("qam"));
-                                    $("#addMed #flags-qhs").prop("checked", data.flags.includes("qhs"));
-                                    $("#addMed #flags-prn").prop("checked", data.flags.includes("prn"));
-                                    $("#addMed #flags-adlib").prop("checked", data.flags.includes("ad lib"));
-                                    $("#addMed #schedule-default").prop("checked", data.schedule == "default");
-                                    $("#addMed #schedule-whole").prop("checked", data.schedule == "whole");
-                                }
-
-                            })
-                        });
-                        $("#addMed").on("submit", function (e) {
-                            e.preventDefault();
-
-                            let name = $("#addMed #name").val();
-                            let dosage = $("#addMed #dosage").val();
-                            let dosage_unit = $("#addMed #dosage_unit").val();
-                            let dosage_route = $("#addMed #dosage_route").val();
-                            let period_hours = $("#addMed #period_hours").val();
-                            let flags = [];
-                            if ($("#addMed #flags-qam").prop("checked")) {
-                                flags.push("qam");
-                            }
-                            if ($("#addMed #flags-qhs").prop("checked")) {
-                                flags.push("qhs");
-                            }
-                            if ($("#addMed #flags-prn").prop("checked")) {
-                                flags.push("prn");
-                            }
-                            if ($("#addMed #flags-adlib").prop("checked")) {
-                                flags.push("ad lib");
-                            }
-                            let schedule = $("#addMed input[name=schedule]:checked").val();
-                            $.ajax({
-                                url: "/api/health/meds/directions",
-                                method: "POST",
-                                contentType: "application/json",
-                                data: JSON.stringify({
-                                    name: name,
-                                    dosage: parseInt(dosage),
-                                    dosage_unit: dosage_unit,
-                                    dosage_route: dosage_route,
-                                    period_hours: parseInt(period_hours),
-                                    flags: flags,
-                                    schedule: schedule
-                                }),
-                                success: function (data) {
-                                    window.location.reload();
-                                },
-                            })
-                        })
-                    </script>
                 </div>
 
             </div>
@@ -261,7 +378,7 @@
                             }
                             const medTakeForm = accEl.querySelector(".med-take-form")
                             medTakeForm.querySelector("input#dosage").value = med.dosage
-                            const medTimeline = (() => {
+                            let medTimeline = (() => {
                                 let timeline = accEl.querySelector("#timeline")
                                 const medTimelineTpl = accEl.querySelector("#timeline-tpl")
                                 if (timeline) {
@@ -312,22 +429,25 @@
                                 },
                                 success: function (data) {
                                     let icon = accEl.querySelector(".accordion-icon")
-                                    let important = false
-                                    let available = false
+                                    let important = dayjs().isAfter(dayjs(data.expected.time)) && !prn;
+                                    let available = data.dose_offset > -0.2 || adlib;
                                     icon.setAttribute("class", "accordion-icon")
-                                    if (data.dose_offset < -0.2 || dayjs().isAfter(dayjs(data.expected.time).add(1, "day"))) {
+
+
+                                    if (important) {
+                                        available = true
+                                        accEl.setAttribute("data-weight", 50)
+                                        important = !adlib
+                                        icon.classList.add("trima-procedure-optimal")
+                                    } else if (data.dose_offset < -0.2 || dayjs().isAfter(dayjs(data.expected.time).add(1, "day"))) {
                                         accEl.setAttribute("data-weight", (prn || adlib) ? 5 : 10)
                                         icon.classList.add("trima-procedure-ineligible")
                                     } else if (data.dose_offset < 0 || adlib || (prn && data.dose_offset == 0)) {
                                         available = true
                                         accEl.setAttribute("data-weight", (prn || adlib) ? 15 : 20)
                                         icon.classList.add("trima-procedure-valid")
-                                    } else {
-                                        available = true
-                                        accEl.setAttribute("data-weight", 50)
-                                        important = !adlib
-                                        icon.classList.add("trima-procedure-optimal")
                                     }
+
                                     if (initial) {
                                         accEl.querySelector(".accordion-collapse").classList[important ? "add" : "remove"]("show")
                                         accEl.querySelector(".accordion-button").classList[important ? "remove" : "add"]("collapsed")
@@ -375,46 +495,56 @@
                                             tbody.innerHTML = "";
                                             let projectedTr = document.createElement("tr");
                                             projectedTr.classList.add("table-primary");
-                                            projectedTr.innerHTML = `<th scope="row"></th><td></td><td></td><td></td>`;
-                                            labelTimeElement(projectedTr.children[0], data.expected.time);
-                                            projectedTr.children[1].innerText = `${data.expected.dose} ${med.dosage_unit} (${(prn || adlib) ? "available" : "scheduled"})`;
+                                            projectedTr.innerHTML = `<th scope="row"></th><td></td><td></td><td></td><td></td>`;
+                                            projectedTr.children[0].innerHTML = `<button class="btn btn-sm btn-warning" type="button" aria-expanded="false">Edit Directions</button>`;
+                                            projectedTr.querySelector("button").onclick = e => {
+                                                document.querySelector("#addMed #name").value = med.name + " " + med.shorthand;
+                                                document.querySelector("#addMed #name").dispatchEvent(new CustomEvent("change"));
+                                            }
+                                            labelTimeElement(projectedTr.children[1], data.expected.time, "YY-MM-DD HH:mm");
+                                            projectedTr.children[2].innerText = `${data.expected.dose} ${med.dosage_unit} (${(prn || adlib) ? "available" : "scheduled"})`;
+                                            projectedTr.children[3].innerText = data.dose_offset;
                                             tbody.appendChild(projectedTr);
 
                                             logs.forEach(log => {
                                                 const tr = document.createElement("tr");
-                                                tr.innerHTML = `<th scope="row"></th><td></td><td></td><td></td>`;
-                                                labelTimeElement(tr.children[0], log.actual.time)
-                                                tr.children[1].innerText = `${log.actual.dose}/${log.expected.dose} ${med.dosage_unit}`;
-                                                if (log.actual.dose !== log.expected.dose) {
-                                                    tr.children[1].classList.add("table-warning");
-                                                } else {
-                                                    tr.children[1].classList.add("table-success");
+                                                tr.innerHTML = `<th scope="row"></th><td></td><td></td><td></td><td></td>`;
+                                                tr.children[0].innerHTML = `<button type="button" class="btn btn-sm btn-warning">Edit</button>`;
+                                                tr.querySelector("button").onclick = e => {
+                                                    window.loadMedLogForm(log)
                                                 }
-                                                tr.children[2].innerText = log.dose_offset.toFixed(2);
-                                                if (Math.abs(log.dose_offset) > 1) {
-                                                    tr.children[2].classList.add("table-danger");
-                                                } else if (Math.abs(log.dose_offset) > 0.5) {
+                                                labelTimeElement(tr.children[1], log.actual.time, "YY-MM-DD HH:mm")
+                                                tr.children[2].innerText = `${log.actual.dose}/${log.expected.dose} ${med.dosage_unit}`;
+                                                if (log.actual.dose !== log.expected.dose) {
                                                     tr.children[2].classList.add("table-warning");
                                                 } else {
                                                     tr.children[2].classList.add("table-success");
                                                 }
-
-                                                // compute 7 day offset
-                                                const weekFrom = dayjs(log.actual.time).subtract(7, 'day')
-                                                let offset = 0
-                                                logs.forEach(log => {
-                                                    if (dayjs(log.actual.time).isAfter(weekFrom)) {
-                                                        offset += log.dose_offset
-                                                    }
-                                                })
-
-                                                tr.children[3].innerText = offset.toFixed(2);
-                                                if (Math.abs(offset) > 1) {
+                                                tr.children[3].innerText = log.dose_offset?.toFixed(2);
+                                                if (Math.abs(log.dose_offset) > 0.5) {
                                                     tr.children[3].classList.add("table-danger");
-                                                } else if (Math.abs(offset) > 0.5) {
+                                                } else if (Math.abs(log.dose_offset) > 0.2) {
                                                     tr.children[3].classList.add("table-warning");
                                                 } else {
                                                     tr.children[3].classList.add("table-success");
+                                                }
+
+                                                // compute 7 day offset
+                                                const weekFrom = dayjs(log.actual.time).subtract(7, 'day')
+                                                let offset = log.dose_offset
+                                                logs.forEach(logI => {
+                                                    if (dayjs(logI.actual.time).isAfter(weekFrom) && dayjs(logI.actual.time).isBefore(log.actual.time)) {
+                                                        offset += logI.dose_offset
+                                                    }
+                                                })
+
+                                                tr.children[4].innerText = offset.toFixed(2);
+                                                if (Math.abs(offset) > 1) {
+                                                    tr.children[4].classList.add("table-danger");
+                                                } else if (Math.abs(offset) > 0.5) {
+                                                    tr.children[4].classList.add("table-warning");
+                                                } else {
+                                                    tr.children[4].classList.add("table-success");
                                                 }
                                                 tbody.appendChild(tr);
                                             });
@@ -468,7 +598,7 @@
                                                         fill = ""
                                                         break
                                                 }
-                                                let arrow = $("." + baseClass).clone()
+                                                let arrow = $(".d-none." + baseClass).first().clone()
                                                 if (fill)
                                                     arrow.attr("fill", fill)
                                                 arrow.removeClass("d-none")
@@ -513,14 +643,14 @@
                         dataType: "json",
                         success: function (data) {
                             writeAccordion(data, true).then(() => {
-                                updateTimer = setInterval(() => writeAccordion(data).catch(err => {
+                                updateTimer = setTimeout(() => writeAccordion(data).catch(err => {
                                     throw err
                                 }), 300 * 1000)
                             })
                         }
                     })
                 } else {
-                    clearInterval(updateTimer);
+                    clearTimeout(updateTimer);
                 }
             })
         })()

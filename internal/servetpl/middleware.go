@@ -133,7 +133,7 @@ func ServeTemplateDir(dir string) echo.MiddlewareFunc {
 
 		tplPath := filepath.Join(dir, tplName)
 		if _, err := os.Stat(tplPath); err == nil {
-			log.Printf("dispatch template: %s(%s) ext=%s", tplName, tplPath, ext)
+			//log.Printf("dispatch template: %s(%s) ext=%s", tplName, tplPath, ext)
 			// template file is still there, execute
 			if ext == ".html" {
 				return func(wr io.Writer, data any) error { return templates.ExecuteTemplate(wr, tplName, data) }
