@@ -8,22 +8,29 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
+	"github.com/gorilla/sessions"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/eternal-flame-AD/yoake/config"
 	"github.com/eternal-flame-AD/yoake/internal/auth"
+	"github.com/eternal-flame-AD/yoake/internal/session"
 	"github.com/twilio/twilio-go/client"
 )
 
-func firstUrlValues(val url.Values) map[string]string {
+func firstUrlValues(vals ...url.Values) map[string]string {
 	res := make(map[string]string)
-	for k, v := range val {
-		res[k] = v[0]
+	for _, val := range vals {
+		for k, v := range val {
+			res[k] = v[0]
+		}
 	}
 	return res
 }
+
+const verifySessionName = "twilio-verify"
 
 func VerifyMiddleware(prefix string, baseurlS string) echo.MiddlewareFunc {
 	baseURL, err := url.Parse(baseurlS)
@@ -40,8 +47,15 @@ func VerifyMiddleware(prefix string, baseurlS string) echo.MiddlewareFunc {
 	}
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		verifySignature := func(c echo.Context) error {
+			store := c.Get(session.SessionStoreKeyPrefix + "cookie").(sessions.Store)
 			if reqAuth := auth.GetRequestAuth(c); reqAuth.Valid && reqAuth.HasRole(auth.RoleAdmin) {
 				return next(c)
+			}
+
+			bypassOk := false
+			sess, _ := store.Get(c.Request(), verifySessionName)
+			if ts, ok := sess.Values["verified"].(int64); ok && time.Now().Unix() < ts {
+				bypassOk = true
 			}
 
 			cleanPath := path.Clean(c.Request().URL.Path)
@@ -52,11 +66,17 @@ func VerifyMiddleware(prefix string, baseurlS string) echo.MiddlewareFunc {
 				fullReq.URL = baseURL.ResolveReference(c.Request().URL)
 				fullReq.URL.User = nil
 				if err := TwilioValidate(c, fullReq); err != nil {
-					c.String(http.StatusOK, "We are sorry. Request Validation Failed. This is not your fault.")
 					log.Printf("twilio verify failed: %v", err)
-					return err
+					if !bypassOk {
+						c.String(http.StatusOK, "We are sorry. Request Validation Failed. This is not your fault.")
+						return nil
+					}
+				} else {
+					sess.Values["verified"] = time.Now().Add(5 * time.Minute).Unix()
+					sess.Save(c.Request(), c.Response())
 				}
 			}
+
 			return next(c)
 		}
 		if basicAuth != nil {
@@ -77,12 +97,17 @@ func TwilioValidate(c echo.Context, req *http.Request) error {
 	}
 	requestValidator := client.NewRequestValidator(conf.AuthToken)
 	if req.Method == "POST" {
+		query := c.QueryParams()
 		form, err := c.FormParams()
 		if err != nil {
 			return err
 		}
+
 		if !requestValidator.Validate(req.URL.String(), firstUrlValues(form), signature) {
-			return fmt.Errorf("twilio signature verification failed")
+			req.URL.RawQuery = ""
+			if !requestValidator.Validate(req.URL.String(), firstUrlValues(form, query), signature) {
+				return fmt.Errorf("twilio signature verification failed")
+			}
 		}
 	} else if req.Method == "GET" {
 		if !requestValidator.Validate(req.URL.String(), nil, signature) {

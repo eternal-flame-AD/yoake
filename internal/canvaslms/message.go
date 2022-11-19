@@ -22,7 +22,7 @@ func (h *Handler) SendGradeMessage(conf config.CanvasLMSMessage) error {
 		return err
 	}
 
-	if err := h.comm.SendGenericMessage(conf.Comm, model.GenericMessage{
+	if err := h.comm.SendGenericMessage(conf.Comm, &model.GenericMessage{
 		Subject: conf.Subject,
 		Body:    conf.Template,
 		MIME:    mime,

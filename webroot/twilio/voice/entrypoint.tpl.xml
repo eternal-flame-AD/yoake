@@ -1,5 +1,6 @@
 {{ template "/twilio/head.tpl.xml" . }}
 {{ $session := (get .Global "twilio_session") }}
+{{ $from := (get .Global "from") }}
 
 {{ $num_visited := (get $session "num_visited") }}
 {{ if not $num_visited }}{{ $num_visited = 0 }} {{ end }}
@@ -9,10 +10,11 @@
 
 {{ if $src := (invoke "FormValue" .C "ForwardedFrom") }}
     {{ if eq $src "+15122993080" }}
-        <Redirect method="POST">/twilio/voice/voicemail.xml></Redirect>
+        <Redirect method="POST">/twilio/voice/voicemail.xml</Redirect>
     {{ end }}
 {{ end }}
-
-    <Say voice="alice" language="en-US">This is Anne!</Say>
+    {{ if eq $from "+15122993080" }} 
+        <Redirect method="POST">/api/twilio/process/incoming_owner?then=/twilio/voice/menu-owner.xml</Redirect>
+    {{ end }}
     <Redirect method="POST">/twilio/voice/menu.xml</Redirect>
 </Response>

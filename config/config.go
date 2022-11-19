@@ -25,6 +25,7 @@ type C struct {
 	DB struct {
 		Badger DBBadger
 	}
+	FS      FileStore
 	WebRoot struct {
 		SiteName   string
 		Root       string

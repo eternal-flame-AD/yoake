@@ -64,7 +64,7 @@ func NewClient() (*Client, error) {
 	}, nil
 }
 
-func (c *Client) SendGenericMessage(gmsg model.GenericMessage) error {
+func (c *Client) SendGenericMessage(gmsg *model.GenericMessage) error {
 	msg := Message{
 		Message:  gmsg.Body,
 		Title:    gmsg.Subject,

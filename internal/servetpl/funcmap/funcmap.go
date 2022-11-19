@@ -112,7 +112,9 @@ func GetFuncMap() map[string]interface{} {
 		"sprintf": func(format string, input ...interface{}) interface{} {
 			return fmt.Sprintf(format, input...)
 		},
-		"http":    HttpRequest,
-		"version": Version,
+		"http":      HttpRequest,
+		"version":   Version,
+		"find_word": FindWord,
+		"contain":   Contain,
 	}
 }

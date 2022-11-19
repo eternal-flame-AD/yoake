@@ -1,5 +1,6 @@
 [Unit]
 Description=Yoake Server
+After=mnt-nas.mount
 
 [Service]
 User=caddy
@@ -9,6 +10,7 @@ ExecStart=/var/lib/caddy/yoake/server
 Restart=always
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 AppArmorProfile=yoake
+SupplementaryGroups=data
 
 [Install]
 WantedBy=multi-user.target

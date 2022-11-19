@@ -121,6 +121,14 @@ func ConvertGenericMessage(msgOrig *model.GenericMessage, supportedMIMES []strin
 		msg.Body = doc.Text()
 		msg.MIME = "text/plain"
 	}
+	if msg.MIME == "text/plain" && !util.Contain(supportedMIMES, "text/plain") && util.Contain(supportedMIMES, "text/html") {
+		msg.Body = template.HTMLEscapeString(msg.Body)
+		if msg.Subject != "" {
+			msg.Body = fmt.Sprintf("<b>%s</b>%s", template.HTMLEscapeString(msg.Subject), template.HTMLEscapeString("\n---\n")) + msg.Body
+		}
+
+		msg.MIME = "text/html"
+	}
 
 	if !util.Contain(supportedMIMES, msg.MIME) {
 		return nil, &ErrorMIMENoOverlap{

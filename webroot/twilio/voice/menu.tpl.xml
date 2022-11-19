@@ -5,7 +5,9 @@
 <Response>
     {{ if $digit := (invoke "FormValue" .C "Digits") }}
         {{ if eq $digit "1" }}
-            <Redirect method="POST">/twilio/voice/submenu/connect.xml?connect_to={{urlquery "+5122993080"}}</Redirect>
+            <Redirect method="POST">/twilio/voice/submenu/connect.xml?connect_to={{urlquery "+15122993080" | xml}}&amp;record=1</Redirect>
+        {{ else if eq $digit "2" }}
+            <Redirect method="POST">/twilio/voice/voicemail.xml</Redirect>
         {{ end }}
         {{ if get .Global "debugMenu" }}
             {{ if eq $digit "9" }}
@@ -15,10 +17,12 @@
     {{ else }}
         <Gather numDigits="1" timeout="10" >
             <Say voice="alice" language="en-US">Press 1 to be connected.</Say>
+            <Say voice="alice" language="en-US">Press 2 to enter voicemail.</Say>
             {{ if get .Global "debugMenu" }}
             <Say voice="alice" language="en-US">Press 9 for Debug menu.</Say>
             {{ end }}
         </Gather>
     {{ end }}
     <Say voice="alice" language="en-US">Sorry, I didn't get your response. Have a nice day!</Say>
+    <Hangup />
 </Response>

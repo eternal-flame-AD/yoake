@@ -1,6 +1,39 @@
 {{ template "/twilio/head.tpl.xml" . }}
+{{ $from := (get .Global "from") }}
+
+{{ $digit := (invoke "FormValue" .C "Digits") }}
+{{ if $speech := (invoke "FormValue" .C "SpeechResult") }}
+    {{ if or 
+        (find_word $speech "callback")
+        (find_word $speech "call" "back") }}
+        {{ $digit = "1" }}
+    {{ else if or 
+        (find_word $speech "voicemail")
+        (find_word $speech "voice" "mail") }}
+        {{ $digit = "2" }}
+    {{ end }} 
+{{ end }}
+
 
 <Response>
-<!-- TODO: finish -->
-    <Hangup />
+    {{ if $digit }}
+        {{ if eq $digit "1" }}
+            <Redirect method="POST">/api/twilio/process/voicemail/callback?then=/twilio/voice/voicemail-callback.xml</Redirect>
+        {{ else if eq $digit "2" }}
+            <Redirect method="POST">/api/twilio/process/voicemail/message?then=/twilio/voice/voicemail-record.xml</Redirect>
+        {{ else }}
+            <Say>Sorry I did not understand your input.</Say>
+        {{ end }}
+    {{ end }}
+
+    <Gather
+        hints="voicemail callback"
+        input="dtmf speech"
+        numDigits="1" timeout="10"
+        speechModel="numbers_and_commands"
+    >
+        <Play>
+            /assets/voicemail_welcome.mp3
+        </Play>
+    </Gather>
 </Response>

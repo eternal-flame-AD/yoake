@@ -45,7 +45,7 @@
             {{ template "/partials/ytplayer.tpl.html" . }}
 
             {{ if $auth.Valid }}
-            {{ if eq (index $auth.Roles 0) "admin" }}
+            {{ if contain $auth.Roles "admin" }}
             <details>
                 <summary>Manage</summary>
                 <form id="entertainment-youtube-edit-form">

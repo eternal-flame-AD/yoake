@@ -1,0 +1,7 @@
+{{ template "/twilio/head.tpl.xml" . }}
+{{ $from := (get .Global "from") }}
+
+<Response>
+    <Say voice="alice">The number <prosody rate="60%"><say-as interpret-as="telephone">{{ $from }}</say-as></prosody> will receive a callback. Thank you.</Say>
+    <Hangup />
+</Response>

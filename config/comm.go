@@ -1,8 +1,14 @@
 package config
 
 type Communication struct {
-	Gotify CommGotify
-	Email  CommEmail
+	Gotify   CommGotify
+	Email    CommEmail
+	Telegram CommTelegram
+}
+
+type CommTelegram struct {
+	Token string
+	Owner string
 }
 
 type CommEmail struct {

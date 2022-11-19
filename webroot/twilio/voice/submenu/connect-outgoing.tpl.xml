@@ -1,0 +1,14 @@
+{{ template "/twilio/head.tpl.xml" . }}
+
+<Response>
+
+    {{ if $digit := (invoke "FormValue" .C "Digits") }}
+        <Redirect>/twilio/voice/submenu/connect.xml?connect_to={{ urlquery $digit | xml }}&amp;record=1</Redirect>
+    {{ else }} 
+        <Gather 
+            finishOnKey="#" timeout="60"
+        >
+            <Say>Dial the number you want to connect to followed by pound.</Say>
+        </Gather>
+    {{ end }}
+</Response>

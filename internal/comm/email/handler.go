@@ -33,7 +33,7 @@ func NewHandler() (*Handler, error) {
 	}, nil
 }
 
-func (h *Handler) SendGenericMessage(gmsg model.GenericMessage) error {
+func (h *Handler) SendGenericMessage(gmsg *model.GenericMessage) error {
 	msg := Message{
 		MIME:    gmsg.MIME,
 		Subject: gmsg.Subject,

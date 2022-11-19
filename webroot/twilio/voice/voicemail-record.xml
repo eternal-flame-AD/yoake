@@ -1,0 +1,14 @@
+
+<Response>
+    <Say>Please say your message after the tone.</Say>
+    <Record 
+        action="/twilio/voice/goodbye.xml"
+        method="POST"
+        timeout="10"
+        maxLength="150"
+        recordingStatusCallback="/api/twilio/callback/recording/voicemail"
+        recordingStatusCallbackMethod="POST"
+        playBeep="true"
+    />
+    <Hangup />
+</Response>

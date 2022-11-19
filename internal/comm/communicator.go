@@ -8,6 +8,8 @@ import (
 	"github.com/eternal-flame-AD/yoake/internal/comm/email"
 	"github.com/eternal-flame-AD/yoake/internal/comm/gotify"
 	"github.com/eternal-flame-AD/yoake/internal/comm/model"
+	"github.com/eternal-flame-AD/yoake/internal/comm/telegram"
+	"github.com/eternal-flame-AD/yoake/internal/db"
 	"github.com/eternal-flame-AD/yoake/internal/util"
 )
 
@@ -20,10 +22,15 @@ var (
 	errMethodNotSupported = errors.New("method not supported")
 )
 
-func (c *Communicator) actualSendGenericMessage(tryMethod string, message model.GenericMessage) error {
+func (c *Communicator) actualSendGenericMessage(tryMethod string, message *model.GenericMessage) error {
 	if comm, ok := c.commMethods[tryMethod]; ok {
-		if convertedMsg, err := ConvertGenericMessage(&message, comm.SupportedMIME()); err == nil {
-			return comm.SendGenericMessage(*convertedMsg)
+		if convertedMsg, err := ConvertGenericMessage(message, comm.SupportedMIME()); err == nil {
+			err := comm.SendGenericMessage(convertedMsg)
+			if err != nil {
+				return err
+			}
+			message.ThreadID = convertedMsg.ThreadID
+			return nil
 		} else {
 			return err
 		}
@@ -61,7 +68,7 @@ func (e ErrorSentWithFallback) Error() string {
 // if the preferred method failed to send the message, fallback methods will be tried,
 // and an ErrorSentWithFabback will be returned if any fallback method succeeded.
 // if fallback methods failed as well the original error will be returned.
-func (c *Communicator) SendGenericMessage(preferredMethod string, message model.GenericMessage, force bool) error {
+func (c *Communicator) SendGenericMessage(preferredMethod string, message *model.GenericMessage, force bool) error {
 	if preferredMethod == "" {
 		preferredMethod = c.fallbackCommunicators[0]
 	}
@@ -91,7 +98,7 @@ func (c *Communicator) SendGenericMessage(preferredMethod string, message model.
 	return nil
 }
 
-func InitCommunicator() *Communicator {
+func InitCommunicator(database db.DB) *Communicator {
 	comm := &Communicator{
 		commMethods: make(map[string]model.CommMethod),
 	}
@@ -106,6 +113,12 @@ func InitCommunicator() *Communicator {
 		comm.fallbackCommunicators = append(comm.fallbackCommunicators, "gotify")
 	} else {
 		log.Printf("Failed to initialize gotify communicator: %v", err)
+	}
+	if telegramHandler, err := telegram.NewClient(database); err == nil {
+		comm.commMethods["telegram"] = telegramHandler
+		comm.fallbackCommunicators = append(comm.fallbackCommunicators, "telegram")
+	} else {
+		log.Printf("Failed to initialize telegram communicator: %v", err)
 	}
 
 	return comm

@@ -45,7 +45,7 @@
                                 This website welcomes guests as well!
                                 Click around and I hope you cound have some fun!
                                 {{ else }}
-                                {{ if eq (index $auth.Roles 0) "admin" }}
+                                {{ if contain $auth.Roles "admin" }}
                                 Welcome Home!
                                 {{ else }}
                                 Hello, my friend! You know the drill!
@@ -109,7 +109,7 @@
                     <div class="card-body text-center">
 
                         {{ if $auth.Valid }}
-                        {{ if eq (index $auth.Roles 0) "admin" }}
+                        {{ if contain $auth.Roles "admin" }}
                         <img class="d-block mx-auto trima-btn-card" src={{ trima_img "ja/btn_vista_operator.gif" "url"
                             }}>
                         <p>

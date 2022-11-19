@@ -12,6 +12,7 @@ import (
 	"github.com/eternal-flame-AD/yoake/internal/db"
 	"github.com/eternal-flame-AD/yoake/internal/echoerror"
 	"github.com/eternal-flame-AD/yoake/internal/entertainment"
+	"github.com/eternal-flame-AD/yoake/internal/filestore"
 	"github.com/eternal-flame-AD/yoake/internal/health"
 	"github.com/eternal-flame-AD/yoake/internal/servetpl"
 	"github.com/eternal-flame-AD/yoake/internal/session"
@@ -24,7 +25,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func Init(hostname string, comm *comm.Communicator, database db.DB) {
+func Init(hostname string, comm *comm.Communicator, database db.DB, fs filestore.FS) {
 	e := echo.New()
 
 	webroot := config.Config().WebRoot
@@ -72,6 +73,7 @@ func Init(hostname string, comm *comm.Communicator, database db.DB) {
 		auth.Register(api.Group("/auth", logMiddleware("api_auth", nil)))
 		entertainment.Register(api.Group("/entertainment", logMiddleware("api_entertainment", nil)), database)
 		health.Register(api.Group("/health", logMiddleware("api_health", nil)), database, comm)
+		twilio.Register(api.Group("/twilio", logMiddleware("api_twilio", nil)), fs, comm)
 	}
 
 	e.Use(

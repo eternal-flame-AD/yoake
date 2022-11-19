@@ -1,0 +1,16 @@
+{{ template "/twilio/head.tpl.xml" . }}
+{{ $session := (get .Global "twilio_session") }}
+
+<Response>
+    {{ if $digit := (invoke "FormValue" .C "Digits") }}
+        {{ if eq $digit "1" }}
+            <Redirect method="POST">/twilio/voice/submenu/connect-outgoing.xml</Redirect>
+        {{ end }}
+    {{ else }}
+        <Gather numDigits="1" timeout="10" >
+            <Say voice="alice" language="en-US">Press 1 to connect another party.</Say>
+        </Gather>
+    {{ end }}
+    <Say voice="alice" language="en-US">Sorry, I didn't get your response. Have a nice day!</Say>
+    <Hangup />
+</Response>
