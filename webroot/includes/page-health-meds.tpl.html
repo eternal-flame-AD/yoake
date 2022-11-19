@@ -503,7 +503,7 @@
                                             }
                                             labelTimeElement(projectedTr.children[1], data.expected.time, "YY-MM-DD HH:mm");
                                             projectedTr.children[2].innerText = `${data.expected.dose} ${med.dosage_unit} (${(prn || adlib) ? "available" : "scheduled"})`;
-                                            projectedTr.children[3].innerText = data.dose_offset;
+                                            projectedTr.children[3].innerText = data.dose_offset?.toFixed(2);
                                             tbody.appendChild(projectedTr);
 
                                             logs.forEach(log => {
