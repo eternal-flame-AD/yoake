@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"regexp"
 
 	"github.com/eternal-flame-AD/yoake/config"
 	"github.com/eternal-flame-AD/yoake/internal/auth"
@@ -70,10 +71,28 @@ func Init(hostname string, comm *comm.Communicator, database db.DB, fs filestore
 		canvaslms.Register(api.Group("/canvas", logMiddleware("api_canvas", nil)), comm)
 		utilapi.Register(api.Group("/util", logMiddleware("api_util", nil)))
 		comm.RegisterAPIRoute(api.Group("/comm", logMiddleware("api_comm", nil)))
-		auth.Register(api.Group("/auth", logMiddleware("api_auth", nil)))
+		auth.Register(api.Group("/auth", logMiddleware("api_auth", nil)), database)
 		entertainment.Register(api.Group("/entertainment", logMiddleware("api_entertainment", nil)), database)
 		health.Register(api.Group("/health", logMiddleware("api_health", nil)), database, comm)
 		twilio.Register(api.Group("/twilio", logMiddleware("api_twilio", nil)), fs, comm)
+	}
+
+	if fsConf := config.Config().FS; fsConf.Serve {
+		e.Group("/files").Use(auth.RequireMiddleware(auth.RoleAdmin), middleware.RewriteWithConfig(middleware.RewriteConfig{RegexRules: map[*regexp.Regexp]string{regexp.MustCompile("^/files/(.*)$"): "/$1"}}),
+			middleware.StaticWithConfig(middleware.StaticConfig{
+				Skipper: func(c echo.Context) bool {
+					if c.Request().Method != echo.GET {
+						return true
+					}
+					if fetchMode := c.Request().Header.Get("Sec-Fetch-Mode"); fetchMode != "" && fetchMode != "navigate" {
+						// some protection against XSS
+						return true
+					}
+					return false
+				},
+				Root:   fsConf.BasePath,
+				Browse: true,
+			}), logMiddleware("files", nil))
 	}
 
 	e.Use(
@@ -89,7 +108,7 @@ func Init(hostname string, comm *comm.Communicator, database db.DB, fs filestore
 		middleware.Gzip(),
 		auth.Middleware(sessionCookie),
 		logMiddleware("twilio", twilio.VerifyMiddleware("/twilio", config.Config().Twilio.BaseURL)),
-		middleware.Rewrite(map[string]string{"*/": "$1/index.html"}),
+		middleware.RewriteWithConfig(middleware.RewriteConfig{RegexRules: map[*regexp.Regexp]string{regexp.MustCompile("^/$"): "/index.html"}}),
 		logMiddleware("template", servetpl.ServeTemplateDir(webroot.Root)),
 		logMiddleware("static", middleware.Static(webroot.Root)))
 

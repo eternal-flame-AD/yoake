@@ -37,7 +37,6 @@ func VerifyMiddleware(prefix string, baseurlS string) echo.MiddlewareFunc {
 	if err != nil {
 		log.Fatalf("invalid twilio baseurl: %v", baseurlS)
 	}
-	log.Printf("twilio baseurl is %v", baseURL)
 	var basicAuth echo.MiddlewareFunc
 	if userpass := baseURL.User.String(); userpass != "" {
 		basicAuth = middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
@@ -59,14 +58,12 @@ func VerifyMiddleware(prefix string, baseurlS string) echo.MiddlewareFunc {
 			}
 
 			cleanPath := path.Clean(c.Request().URL.Path)
-			//log.Printf("cleanPath: %s", cleanPath)
 			if cleanPath == prefix || strings.HasPrefix(cleanPath, prefix+"/") {
 				fullReq := c.Request().Clone(c.Request().Context())
-				log.Printf("original request URL: %v, scheme=%s, host=%s, user=%s", c.Request().URL, c.Request().URL.Scheme, c.Request().URL.Host, c.Request().URL.User)
 				fullReq.URL = baseURL.ResolveReference(c.Request().URL)
 				fullReq.URL.User = nil
 				if err := TwilioValidate(c, fullReq); err != nil {
-					log.Printf("twilio verify failed: %v", err)
+					log.Printf("twilio verify failed: %v, url=%s", err, fullReq.URL.String())
 					if !bypassOk {
 						c.String(http.StatusOK, "We are sorry. Request Validation Failed. This is not your fault.")
 						return nil

@@ -31,6 +31,37 @@
     fill: currentColor;
 }
 
+.card {
+    --bs-card-cap-bg: {{ theme_color "sakura" }};
+}
+
+.modal {
+    /* --bs-modal-bg: {{ theme_color "sakura" }}; */ 
+}
+
+.card .card-body {
+    background-color: {{ theme_color "sakura" }}55;
+}
+
+/* navigation elements */
+nav.navbar {
+    background-color: {{ theme_color "sakura" }};
+}
+
+.bg-light {
+    --bs-light-rgb: {{ theme_color "sakura" }};
+}
+
+nav.navbar * {
+    background-color: {{ theme_color "sakura" }};
+    box-shadow: none;
+}
+
+body {
+    background-color: {{ theme_color "sakura" }}33;
+}
+
+
 .nav-scroller {
     position: relative;
     z-index: 2;
@@ -48,6 +79,8 @@
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
 }
+
+/* trima logos */
 
 .trima-procedure-hidden img.trima-procedure {
     display: none;

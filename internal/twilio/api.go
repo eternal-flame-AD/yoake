@@ -15,10 +15,13 @@ import (
 	"github.com/eternal-flame-AD/yoake/internal/comm/model"
 	"github.com/eternal-flame-AD/yoake/internal/comm/telegram"
 	"github.com/eternal-flame-AD/yoake/internal/filestore"
+	"github.com/eternal-flame-AD/yoake/internal/servetpl/funcmap"
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/afero"
 	"github.com/twilio/twilio-go"
 	openapi "github.com/twilio/twilio-go/rest/api/v2010"
+
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 const rfc2822 = "Mon, 02 Jan 2006 15:04:05 -0700"
@@ -64,27 +67,27 @@ type CallStatusCallbackProgressForm struct {
 	SequenceNumber    int    `form:"SequenceNumber"  json:"SequenceNumber"`
 }
 
-func findCallDir(callsDir filestore.FS, callSid string, from string, to string) (filestore.FS, error) {
+func findCallDir(callsDir filestore.FS, callSid string, from string, to string) (filestore.FS, string, error) {
 	if callSid == "" {
-		return nil, fmt.Errorf("callSid is empty")
+		return nil, "", fmt.Errorf("callSid is empty")
 	}
 	dirs, err := afero.ReadDir(callsDir, ".")
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	for _, dir := range dirs {
 		if dir.IsDir() {
 			if strings.HasSuffix(dir.Name(), callSid) {
-				return filestore.ChrootFS(callsDir, dir.Name()), nil
+				return filestore.ChrootFS(callsDir, dir.Name()), dir.Name(), nil
 			}
 		}
 	}
 	now := time.Now()
-	newName := fmt.Sprintf("%s_%s_%s_%s", now.Format("2006-01-02T15:04:05"), from, to, callSid)
+	newName := fmt.Sprintf("%s_%s_%s_%s", now.Format("2006-01-02T15.04.05"), from, to, callSid)
 	if err := callsDir.Mkdir(newName, 0770); err != nil {
-		return nil, err
+		return nil, "", err
 	}
-	return filestore.ChrootFS(callsDir, newName), nil
+	return filestore.ChrootFS(callsDir, newName), newName, nil
 }
 
 func fetchRecording(apiClient *twilio.RestClient, callDir filestore.FS, sid string, recType string) error {
@@ -215,7 +218,7 @@ func Register(g *echo.Group, fs filestore.FS, comm model.Communicator) {
 			if sid == "" {
 				return c.String(http.StatusBadRequest, "missing call sid")
 			}
-			callDir, err := findCallDir(calls, form.CallSid, "", "")
+			callDir, _, err := findCallDir(calls, form.CallSid, "", "")
 			if err != nil {
 				return err
 			}
@@ -227,12 +230,19 @@ func Register(g *echo.Group, fs filestore.FS, comm model.Communicator) {
 			if err := c.Bind(form); err != nil {
 				return err
 			}
-			callDir, err := findCallDir(calls, form.CallSid, form.From, form.To)
+			callDir, callDirName, err := findCallDir(calls, form.CallSid, form.From, form.To)
 			if err != nil {
 				return err
 			}
+			callDirAbs := fmt.Sprintf("/calls/%s", callDirName)
+			log.Printf("call %s: %s -> %s dirAbs=%s", form.CallSid, form.From, form.To, callDirAbs)
 			if hasTelegram {
-				tg.SendHTML(tg.OwnerChatID, fmt.Sprintf("Call From %s (%s):\n\nTo: %s\nSid: %s", form.From, form.CallStatus, form.To, form.CallSid))
+				msg := tgbotapi.NewMessage(tg.OwnerChatID, fmt.Sprintf("Call From %s (%s):\n\nTo: %s\nSid: %s\nCallDir: <a href=\"%s\">%s</a>",
+					form.From, form.CallStatus, form.To, form.CallSid, funcmap.FileAccess(callDirAbs+"/"), callDirAbs))
+				msg.ParseMode = tgbotapi.ModeHTML
+				if _, err := tg.Client().Send(msg); err != nil {
+					log.Printf("failed to send telegram message: %v", err)
+				}
 			}
 
 			fileName := fmt.Sprintf("status.%d.json", time.Now().UnixNano())

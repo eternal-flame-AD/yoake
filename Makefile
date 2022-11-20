@@ -22,8 +22,9 @@ build: webroot $(COMMANDSDIST)
 dev:
 	while true; do \
 		kill $$(cat .server.pid); \
-		make build && \
+		make GOGCFLAGS='all=-N -l' build && \
 			(dist/server -c config-dev.yml & echo $$! > .server.pid); \
+			jq " .configurations[0].processId = $$(cat .server.pid) " .vscode/launch-tpl.json > .vscode/launch.json; \
 		inotifywait -e modify -r webroot internal server config && kill $(cat .server.pid) ; \
 	done
 
@@ -45,6 +46,7 @@ dist/%: ${CMD_DIR}/% FORCE
 	go build -buildvcs\
 		-ldflags "-X ${MODULE_PATH}/internal/version.tagVersion=$(VERSION) 	\
 				  -X ${MODULE_PATH}/internal/version.buildDate=$(BUILDDATE)" \
+		-gcflags "$(GOGCFLAGS)" \
 		-o $@ ${MODULE_PATH}/$<
 
 .PHONY: build clean

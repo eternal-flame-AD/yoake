@@ -2,7 +2,6 @@ package health
 
 import (
 	"encoding/json"
-	"log"
 	"math"
 	"sort"
 	"time"
@@ -148,7 +147,6 @@ func (c ComplianceLogList) UpdateDoseOffset(dir Direction) {
 			}
 
 			c[i].DoseOffset = f64OrNan(doseOffset(dir, thisDose, lastDose))
-			log.Printf("thisDose: %+v, \nlastDose: %+v\n-->offset: %f\n", thisDose, lastDose, c[i].DoseOffset)
 		}
 	}
 }

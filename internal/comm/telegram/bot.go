@@ -10,6 +10,7 @@ import (
 	"github.com/eternal-flame-AD/yoake/config"
 	"github.com/eternal-flame-AD/yoake/internal/comm/model"
 	"github.com/eternal-flame-AD/yoake/internal/db"
+	"github.com/eternal-flame-AD/yoake/internal/servetpl/funcmap"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -21,7 +22,7 @@ const (
 	RoleOwner     Role = 2
 )
 
-type CommandHandler func(bot *Bot, role Role, msg *tgbotapi.Message) error
+type CommandHandler func(bot *Bot, role Role, update tgbotapi.Update) error
 
 type Bot struct {
 	client      *tgbotapi.BotAPI
@@ -75,6 +76,10 @@ func (b *Bot) saveConf() error {
 	return txn.Commit()
 }
 
+func (b *Bot) Client() *tgbotapi.BotAPI {
+	return b.client
+}
+
 func (b *Bot) SendHTML(chatID int64, fmtStr string, args ...interface{}) error {
 	for i := range args {
 		switch v := args[i].(type) {
@@ -90,32 +95,50 @@ func (b *Bot) SendHTML(chatID int64, fmtStr string, args ...interface{}) error {
 	return err
 }
 func (b *Bot) handleUpdate(update tgbotapi.Update) error {
-	if update.Message == nil {
-		return nil
-	}
-	log.Printf("received message from %s: %v", update.Message.From.UserName, update.Message)
-	msg := *update.Message
-	conf := config.Config().Comm.Telegram
-	if strings.HasPrefix(conf.Owner, "@") && msg.From.UserName == conf.Owner[1:] {
-		log.Printf("telegram owner chat id set: %d", msg.Chat.ID)
-		b.OwnerChatID = msg.Chat.ID
-	} else if id, err := strconv.ParseInt(conf.Owner, 10, 64); err == nil && msg.From.ID == id || msg.Chat.ID == id {
-		if msg.Chat.ID != b.OwnerChatID {
-			log.Printf("telegram owner chat id set: %d", msg.Chat.ID)
-			b.OwnerChatID = msg.Chat.ID
+
+	role := RoleAnonymous
+	if msg := update.Message; msg != nil {
+		log.Printf("received message from %s: %v", update.Message.From.UserName, update.Message)
+		msg := *update.Message
+		conf := config.Config().Comm.Telegram
+		if strings.HasPrefix(conf.Owner, "@") && msg.From.UserName == conf.Owner[1:] {
+			if msg.Chat.ID != b.OwnerChatID {
+				log.Printf("telegram owner chat id set: %d", msg.Chat.ID)
+				b.OwnerChatID = msg.Chat.ID
+			}
+		} else if id, err := strconv.ParseInt(conf.Owner, 10, 64); err == nil && msg.From.ID == id || msg.Chat.ID == id {
+			if msg.Chat.ID != b.OwnerChatID {
+				log.Printf("telegram owner chat id set: %d", msg.Chat.ID)
+				b.OwnerChatID = msg.Chat.ID
+			}
+		}
+		if msg.Chat.ID == b.OwnerChatID {
+			role = RoleOwner
+		}
+		if msg.IsCommand() {
+			if handler, ok := b.cmdHandlers[msg.Command()]; ok {
+				return handler(b, role, update)
+			} else {
+				if err := b.SendHTML(msg.Chat.ID, "unknown command: %s\n", msg.Command()); err != nil {
+					return err
+				}
+			}
 		}
 	}
-	role := RoleAnonymous
-	if msg.Chat.ID == b.OwnerChatID {
-		role = RoleOwner
-	}
 
-	if msg.IsCommand() {
-		if handler, ok := b.cmdHandlers[msg.Command()]; ok {
-			return handler(b, role, &msg)
-		} else {
-			if err := b.SendHTML(msg.Chat.ID, "unknown command: %s\n", msg.Command()); err != nil {
-				return err
+	if callback := update.CallbackQuery; callback != nil {
+		cb := tgbotapi.NewCallback(callback.ID, "")
+		defer b.client.Send(cb)
+		if msg := callback.Message; msg != nil {
+			if callbackMsg := msg.ReplyToMessage; callbackMsg != nil && callbackMsg.IsCommand() {
+				if handler, ok := b.cmdHandlers[callbackMsg.Command()]; ok {
+					log.Printf("callback for command %s", callbackMsg.Command())
+					return handler(b, role, update)
+				} else {
+					if err := b.SendHTML(callback.Message.Chat.ID, "unknown command: %s\n", callback.Message.Command()); err != nil {
+						return err
+					}
+				}
 			}
 		}
 	}
@@ -127,8 +150,12 @@ func (bot *Bot) start() error {
 	u := tgbotapi.NewUpdate(bot.LastUpdateID + 1)
 	u.Timeout = 60
 
-	bot.RegisterCommand("start", "onboarding command", func(bot *Bot, role Role, msg *tgbotapi.Message) error {
-		bot.client.Send(tgbotapi.NewMessage(msg.Chat.ID, strings.ReplaceAll(banner, "{name}", msg.From.FirstName+" "+msg.From.LastName)))
+	bot.RegisterCommand("start", "onboarding command", func(bot *Bot, role Role, upd tgbotapi.Update) error {
+		if msg := upd.Message; msg != nil {
+			if _, err := bot.client.Send(tgbotapi.NewMessage(msg.Chat.ID, strings.ReplaceAll(banner, "{name}", msg.From.FirstName+" "+msg.From.LastName))); err != nil {
+				return err
+			}
+		}
 		return nil
 	})
 
@@ -136,10 +163,19 @@ func (bot *Bot) start() error {
 	go func() {
 		for update := range updates {
 			if err := bot.handleUpdate(update); err != nil {
-				if fid := update.FromChat().ID; fid != bot.OwnerChatID {
-					bot.SendHTML(fid, "<b>RUNTIME ERROR</b>\n<pre>%s</pre>\nBot owner has been notified.", err)
+				fromChat := update.FromChat()
+				if stopImgURL, err := funcmap.TrimaImg("ja/btn_stop.gif", "url"); err != nil {
+					log.Printf("failed to get stop image: %v", err)
+				} else {
+					stopPhoto := tgbotapi.NewPhoto(fromChat.ID, tgbotapi.FileURL(stopImgURL))
+					stopPhoto.DisableNotification = true
+					bot.client.Send(stopPhoto)
 				}
-				bot.SendHTML(bot.OwnerChatID, "<b>RUNTIME ERROR</b>\noriginating chat ID: %d (@%s)\n\n<pre>%s</pre>", update.FromChat().ID, update.FromChat().UserName, err)
+				if fromChat.ID != bot.OwnerChatID {
+					bot.SendHTML(fromChat.ID, "<b>Runtime Error</b>\n<pre>%s</pre>\nBot owner has been notified.", err)
+
+				}
+				bot.SendHTML(bot.OwnerChatID, "<b>Runtime Error</b>\noriginating chat ID: %d (@%s)\n\n<pre>%s</pre>", update.FromChat().ID, update.FromChat().UserName, err)
 				log.Printf("telegram runtime error: %v", err)
 			}
 

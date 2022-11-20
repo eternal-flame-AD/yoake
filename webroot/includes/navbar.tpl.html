@@ -1,6 +1,8 @@
 {{ $version := version }}
-<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+{{ $auth := (get_auth .C) }}
+<nav class="navbar sticky-top flex-md-nowrap p-0">
     <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6" href="#">
+
         {{- (call .Config).WebRoot.SiteName -}}
         <small class="fw-lighter text-muted px-2">{{ $version.Version }} - {{ $version.Date }}</small>
     </a>
@@ -13,4 +15,11 @@
     <input class="form-control form-control-dark w-100 rounded-0 border-0" type="text" placeholder="Search"
         aria-label="Search">
         -->
-</header>
+    <div class="navbar-nav">
+        <div class="nav-item text-nowrap px-3">
+            {{ if $auth.Valid }}
+            {{ if $auth.Ident.DisplayName }} {{ $auth.Ident.DisplayName }} {{ else }} {{ $auth.Ident.Username }} {{ end
+            }}
+            {{ end }}
+        </div>
+</nav>

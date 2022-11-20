@@ -60,6 +60,7 @@ type C struct {
 			Password    string
 			PublicKeyId []string
 			Roles       []string
+			Telegram    string
 		}
 		Yubikey struct {
 			ClientId  string

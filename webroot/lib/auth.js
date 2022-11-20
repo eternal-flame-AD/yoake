@@ -4,6 +4,27 @@ async function getAuth() {
     return bodyJSON
 }
 
+function onLoginError(data) {
+    try {
+        let msg = data.responseJSON.message || data.responseJSON;
+        $('#login-form-error').removeClass('d-none').find('span').text(msg);
+    } catch (e) {
+        $('#login-form-error').removeClass('d-none').find('span').text(e.message);
+    }
+}
+
+function onTelegramAuth(user) {
+    $.ajax({
+        type: 'POST',
+        url: '/api/auth/login_tg',
+        data: JSON.stringify(user),
+        contentType: 'application/json',
+        success: function (data) {
+            window.location.reload();
+        },
+        error: onLoginError,
+    })
+}
 
 function submitLoginForm(target, e) {
     e.preventDefault()
@@ -18,14 +39,7 @@ function submitLoginForm(target, e) {
         success: function (data) {
             window.location.reload();
         },
-        error: function (data) {
-            try {
-                let msg = data.responseJSON.message || data.responseJSON;
-                $('#login-form-error').removeClass('d-none').find('span').text(msg);
-            } catch (e) {
-                $('#login-form-error').removeClass('d-none').find('span').text(e.message);
-            }
-        }
+        error: onLoginError,
     });
 
 }

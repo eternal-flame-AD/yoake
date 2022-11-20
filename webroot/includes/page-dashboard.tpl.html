@@ -109,10 +109,15 @@
                     <div class="card-body text-center">
 
                         {{ if $auth.Valid }}
-                        {{ if contain $auth.Roles "admin" }}
+                        {{ if $auth.Ident.PhotoURL }}
+                        <img src="{{ $auth.Ident.PhotoURL }}" class="rounded-circle" width="100" height="100"
+                            alt="Photo">
+                        {{ else }}
                         <img class="d-block mx-auto trima-btn-card" src={{ trima_img "ja/btn_vista_operator.gif" "url"
                             }}>
                         <p>
+                            {{ end }}
+                            {{ if contain $auth.Roles "admin" }}
                             You have super powers!
                         </p>
                         {{ end }}

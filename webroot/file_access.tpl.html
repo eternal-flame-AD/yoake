@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+{{- $path := "" }}
+{{- if $formPath := (invoke "FormValue" .C "path") }}
+{{- $path = $formPath }}
+{{- else if $pathParam := (invoke "Param" .C "path") }}
+{{- $path = $pathParam }}
+{{- end }}
+{{- if or (not $path)
+    (ne (slice $path 0 1) "/") }}
+{{- $path = (sprintf "/%s" $path) }}
+{{- end}}
+
+
+<head>
+    {{ if (call .Config).FS.Serve }}
+    <meta http-equiv="refresh" content="0; url=/files{{$path}}">
+    {{ else }}
+    <meta http-equiv="refresh"
+        content="0; url=https://meakan.yumechi.jp/index.cgi?launchApp=SYNO.SDS.App.FileStation3.Instance&launchParam={{ $path | sprintf "/yoake/yoake.yumechi.jp%s" | query | sprintf "openfile=%s" | query }}">
+    {{ end }}
+</head>

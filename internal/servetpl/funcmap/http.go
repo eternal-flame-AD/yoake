@@ -1,7 +1,7 @@
 package funcmap
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/PuerkitoBio/goquery"
@@ -44,7 +44,7 @@ func HttpRequest(method string, URL string, selector string, responseType string
 		}
 		return result.Html()
 	}
-	response, err := ioutil.ReadAll(resp.Body)
+	response, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

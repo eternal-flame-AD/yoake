@@ -2,7 +2,6 @@ package funcmap
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 )
 
@@ -19,7 +18,6 @@ func Lookup(name string, args ...reflect.Value) (interface{}, error) {
 	zero := reflect.ValueOf("")
 
 	target := args[0]
-	log.Printf("lookup %s %v", name, target)
 	if len(args) > 1 {
 		zero = args[1]
 	}
@@ -60,9 +58,6 @@ func Invoke(name string, target reflect.Value, args ...reflect.Value) (any, erro
 		}
 		target = reflect.ValueOf(t)
 	}
-	for i, arg := range args {
-		log.Printf("invoke %s arg[%d]=%v", name, i, arg)
-	}
 	ret := target.Call(args)
 	if len(ret) == 0 {
 		return nil, nil
@@ -70,9 +65,6 @@ func Invoke(name string, target reflect.Value, args ...reflect.Value) (any, erro
 
 	if err, ok := ret[len(ret)-1].Interface().(error); ok && err != nil {
 		return nil, err
-	}
-	for i, r := range ret {
-		log.Printf("invoke %s ret[%d]=%v", name, i, r)
 	}
 
 	switch len(ret) {
@@ -96,25 +88,26 @@ func Void(args ...reflect.Value) string {
 
 func GetFuncMap() map[string]interface{} {
 	return map[string]interface{}{
-		"lookup":          Lookup,
-		"invoke":          Invoke,
-		"void":            Void,
-		"get":             FuncGet,
-		"set":             FuncSet,
-		"math":            Math,
-		"xml":             EscapeXML,
-		"twilio_validate": TwilioValidate,
-		"stop":            Stop,
-		"trima_img":       TrimaImg,
-		"parse_json":      ParseJSON,
-		"json":            MarshalJSON,
-		"get_auth":        AuthGet,
+		"lookup":     Lookup,
+		"invoke":     Invoke,
+		"void":       Void,
+		"get":        FuncGet,
+		"set":        FuncSet,
+		"math":       Math,
+		"xml":        EscapeXML,
+		"stop":       Stop,
+		"trima_img":  TrimaImg,
+		"parse_json": ParseJSON,
+		"json":       MarshalJSON,
+		"get_auth":   AuthGet,
 		"sprintf": func(format string, input ...interface{}) interface{} {
 			return fmt.Sprintf(format, input...)
 		},
-		"http":      HttpRequest,
-		"version":   Version,
-		"find_word": FindWord,
-		"contain":   Contain,
+		"http":        HttpRequest,
+		"version":     Version,
+		"find_word":   FindWord,
+		"contain":     Contain,
+		"query":       EscapeQuery,
+		"theme_color": ThemeColor,
 	}
 }

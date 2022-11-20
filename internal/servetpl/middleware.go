@@ -122,8 +122,6 @@ func ServeTemplateDir(dir string) echo.MiddlewareFunc {
 		ext := path.Ext(file)
 		tplName := file[:len(file)-len(ext)] + ".tpl" + ext
 		if path.Ext(file[:len(file)-len(ext)]) == ".tpl" {
-			/* reject requests for the template source file */
-			log.Printf("rejecting request for template source file: %s", file)
 			if _, err := os.Stat(filepath.Join(dir, file)); err == nil {
 				return func(wr io.Writer, data any) error {
 					return errTplExtNotStripped
@@ -133,8 +131,6 @@ func ServeTemplateDir(dir string) echo.MiddlewareFunc {
 
 		tplPath := filepath.Join(dir, tplName)
 		if _, err := os.Stat(tplPath); err == nil {
-			//log.Printf("dispatch template: %s(%s) ext=%s", tplName, tplPath, ext)
-			// template file is still there, execute
 			if ext == ".html" {
 				return func(wr io.Writer, data any) error { return templates.ExecuteTemplate(wr, tplName, data) }
 			} else {

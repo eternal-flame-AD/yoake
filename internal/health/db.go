@@ -189,13 +189,19 @@ func DBMedComplianceLogSetOne(database db.DB, dir Direction, log *ComplianceLog)
 	}
 
 	logs.UpdateDoseOffset(dir)
+
+	uuid := log.UUID
 	sort.Sort(ComplianceLogList(logs))
 
 	if err := db.SetJSON(txn, []byte(dbMedComplianceLogPrefix+index), logs); err != nil {
 		return err
 	}
 
-	*log = logs[len(logs)-1]
+	for i, l := range logs {
+		if l.UUID == uuid {
+			*log = logs[i]
+		}
+	}
 
 	return txn.Commit()
 

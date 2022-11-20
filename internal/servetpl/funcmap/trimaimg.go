@@ -3,7 +3,7 @@ package funcmap
 import (
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 )
@@ -23,7 +23,7 @@ func TrimaImg(path string, retType string) (string, error) {
 		if resp.StatusCode != 200 {
 			return nil, fmt.Errorf("bad status code: %d", resp.StatusCode)
 		}
-		return ioutil.ReadAll(resp.Body)
+		return io.ReadAll(resp.Body)
 	}
 	switch retType {
 	case "url":
