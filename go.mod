@@ -7,7 +7,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/alexedwards/argon2id v0.0.0-20211130144151-3585854a6387
 	github.com/dgraph-io/badger/v3 v3.2103.4
-	github.com/eternal-flame-AD/go-apparmor v0.0.3
+	github.com/eternal-flame-AD/go-apparmor v0.0.4
 	github.com/eternal-flame-AD/yubigo v0.0.0-20221005082707-ce0c8989e8b1
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/gomarkdown/markdown v0.0.0-20221013030248-663e2500819c
@@ -16,10 +16,12 @@ require (
 	github.com/gorilla/sessions v1.2.1
 	github.com/jinzhu/configor v1.2.1
 	github.com/labstack/echo/v4 v4.9.1
+	github.com/maxence-charriere/go-app/v9 v9.6.7
 	github.com/spf13/afero v1.9.3
 	github.com/stretchr/testify v1.8.1
 	github.com/twilio/twilio-go v1.1.1
 	github.com/vanng822/go-premailer v1.20.1
+	golang.org/x/mod v0.7.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 )
 

@@ -14,10 +14,12 @@ import (
 	"github.com/eternal-flame-AD/yoake/internal/echoerror"
 	"github.com/eternal-flame-AD/yoake/internal/entertainment"
 	"github.com/eternal-flame-AD/yoake/internal/filestore"
+	"github.com/eternal-flame-AD/yoake/internal/gomod"
 	"github.com/eternal-flame-AD/yoake/internal/health"
 	"github.com/eternal-flame-AD/yoake/internal/servetpl"
 	"github.com/eternal-flame-AD/yoake/internal/session"
 	"github.com/eternal-flame-AD/yoake/internal/twilio"
+	"github.com/eternal-flame-AD/yoake/internal/uinext/ui"
 	"github.com/eternal-flame-AD/yoake/internal/utilapi"
 	"github.com/eternal-flame-AD/yoake/server"
 	"github.com/gorilla/context"
@@ -66,6 +68,11 @@ func Init(hostname string, comm *comm.Communicator, database db.DB, fs filestore
 		e.Use(middleware.RequestLoggerWithConfig(lc))
 	}
 
+	{
+		goproxy := e.Group("/goproxy")
+		e.Use(gomod.Register("/goproxy", goproxy))
+	}
+
 	api := e.Group("/api", echoerror.Middleware(echoerror.JSONWriter))
 	{
 		canvaslms.Register(api.Group("/canvas", logMiddleware("api_canvas", nil)), comm)
@@ -112,5 +119,6 @@ func Init(hostname string, comm *comm.Communicator, database db.DB, fs filestore
 		logMiddleware("template", servetpl.ServeTemplateDir(webroot.Root)),
 		logMiddleware("static", middleware.Static(webroot.Root)))
 
+	ui.Register(e.Group(""))
 	server.RegisterHostname(hostname, &server.Host{Echo: e})
 }

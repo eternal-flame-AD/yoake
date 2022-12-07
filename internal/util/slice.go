@@ -32,6 +32,14 @@ func AntiJoin[T comparable](a []T, b []T) []T {
 	return result
 }
 
+func Join[T any](vals ...[]T) []T {
+	result := make([]T, 0)
+	for _, val := range vals {
+		result = append(result, val...)
+	}
+	return result
+}
+
 func Reverse[T any](a []T) []T {
 	var result []T
 	for i := len(a) - 1; i >= 0; i-- {
