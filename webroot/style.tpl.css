@@ -39,6 +39,58 @@
     /* --bs-modal-bg: {{ theme_color "sakura" }}; */ 
 }
 
+/* forms  */
+
+.form-check-input:checked {
+    background-color: {{ theme_color "momo" }};
+    border-color: {{ theme_color "momo" }};
+}
+
+/* buttons and links */
+
+.btn-primary {
+    --bs-btn-bg: {{ theme_color "momo" }};
+    --bs-btn-border-color: {{ theme_color "momo" }};
+    --bs-btn-hover-bg: {{ theme_color "usubeni" }};
+    --bs-btn-hover-border-color: {{ theme_color "usubeni" }};
+    --bs-btn-active-bg: {{ theme_color "usubeni" }};
+    --bs-btn-disabled-bg: {{ theme_color "kuriume" }};
+    --bs-btn-disabled-border-color: {{ theme_color "kuriume" }};
+}
+
+a {
+    --bs-link-color: {{ theme_color "usubeni" }};
+    --bs-link-hover-color:  {{ theme_color "kohbai" }};
+}
+
+.accordion {
+    --bs-accordion-active-color: {{ theme_color "kohbai" }};
+    --bs-accordion-active-bg: {{ theme_color "usubeni" }}55;
+    --bs-accordion-bg: {{ theme_color "sakura" }}33;
+}
+
+/* tables */
+
+.table {
+    --bs-table-bg: {{ theme_color "sakura" }}33;
+}
+
+.table-primary {
+    --bs-table-bg: {{ theme_color "toki" }}AA;
+}
+
+.text-bg-primary {
+    background-color: {{ theme_color "momo" }} !important;
+}
+
+/* toast */
+
+
+.toast {
+    --bs-toast-header-bg: {{ theme_color "toki" }};
+    --bs-toast-bg: {{ theme_color "sakura" }};
+}
+
 .card .card-body {
     background-color: {{ theme_color "sakura" }}55;
 }
