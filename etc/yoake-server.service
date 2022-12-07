@@ -1,6 +1,7 @@
 [Unit]
 Description=Yoake Server
-After=mnt-nas.mount
+After=network-online.target mnt-nas.mount
+Before=umount.target
 
 [Service]
 User=caddy
