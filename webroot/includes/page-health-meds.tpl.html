@@ -80,7 +80,7 @@
 
                                     <h5>History</h5>
                                     <div class="p-2 table-responsive" style="height:20em;overflow:scroll;">
-                                        <table class="table table-striped compliance-log">
+                                        <table class="table compliance-log">
                                             <thead>
                                                 <tr>
                                                     <th scope="col">Action</th>
@@ -125,7 +125,7 @@
                                     Edit Direction
                                 </button>
                             </h2>
-                            <div id="addMedCollapse" class="accordion-collapse collapse"
+                            <div id="addMedCollapse" class="accordion-collapse collapse px-3 py-2"
                                 data-bs-parent="#medManageAccordion">
                                 <form id="addMed" autocomplete="off">
                                     <div class="mb-3">
@@ -260,7 +260,7 @@
                                     Manage Medication Log
                                 </button>
                             </h2>
-                            <div id="medManageLogCollapse" class="accordion-collapse collapse"
+                            <div id="medManageLogCollapse" class="accordion-collapse collapse px-3 py-2"
                                 data-bs-parent="#medManageAccordion">
                                 <form id="editMedLog" autocomplete="off">
                                     <div class="mb-3">
@@ -439,7 +439,7 @@
                                         accEl.setAttribute("data-weight", 50)
                                         important = !adlib
                                         icon.classList.add("trima-procedure-optimal")
-                                    } else if (data.dose_offset < -0.2 || dayjs().isAfter(dayjs(data.expected.time).add(1, "day"))) {
+                                    } else if (data.dose_offset < -0.2 || dayjs().isBefore(dayjs(data.expected.time).add(1, "day"))) {
                                         accEl.setAttribute("data-weight", (prn || adlib) ? 5 : 10)
                                         icon.classList.add("trima-procedure-ineligible")
                                     } else if (data.dose_offset < 0 || adlib || (prn && data.dose_offset == 0)) {
