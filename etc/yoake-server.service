@@ -1,6 +1,7 @@
 [Unit]
 Description=Yoake Server
-After=network-online.target mnt-nas.mount
+After=network-online.target
+RequiresMountsFor=/mnt/nas
 Before=umount.target
 
 [Service]
