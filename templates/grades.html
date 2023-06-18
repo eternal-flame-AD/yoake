@@ -1,0 +1,28 @@
+<h2>お姫様の成績がアップデートされました！</h2>
+<h2><a href="https://yoake.yumechi.jp/#/grades">最近の採点</a></h2>
+<table>
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Course</td>
+            <td>Assignment</td>
+            <td>Due</td>
+            <td>Grade</td>
+            <td>Graded At</td>
+            <td>Posted At</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for grade in grades %}
+        <tr>
+            <td>{{ grade.submission_username }}</td>
+            <td>{{ grade.course_code }}</td>
+            <td><a href="{{grade.assignment_url}}">{{ grade.name }}</a></td>
+            <td>{{ grade.due }}
+            <td>{{ grade.grade }}</td>
+            <td>{{ grade.graded_at }} </td>
+            <td>{{ grade.posted_at }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

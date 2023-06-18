@@ -1,0 +1,45 @@
+
+listen:
+  addr: 127.0.0.1:3000
+
+db:
+  url: sqlite://data/development.db
+
+canvas_lms:
+  token: "1017~xxxxxxxxxxxx"
+  endpoint: "https://xxx.instructure.com/api/graphql"
+  refresh_interval: 300
+
+comm:
+  gotify:
+    url: https://gotify.yumechi.jp
+    token: Axxxxxx
+  email:
+    from: "Yoake <yoake@yumechi.jp>"
+    to: "yoake@yumechi.jp"
+    host: "smtp.example.com"
+    port: 587
+    username: "yume@yumechi.jp"
+    password: "xxxx"
+    default_subject: "[ohime]お姫様のご注意"
+
+auth:
+  users:
+    yume:
+      roles:
+        - Admin
+        - User
+      password: $argon2id$v=19$m=19456,t=2,p=1$U7zg/pa1Wf9Hi9NM+ns9aA$tivXyIMw+wo9ZZoz0I+6yLm7+1SfkW9fF5hONy/qq1Y
+    test:
+      roles:
+        - User
+      password: $argon2id$v=19$m=19456,t=2,p=1$U7zg/pa1Wf9Hi9NM+ns9aA$tivXyIMw+wo9ZZoz0I+6yLm7+1SfkW9fF5hONy/qq1Y
+
+session:
+  secret: I3fEE8L65Ldk+BrjwPoQQu+skB7k3PlDg5uVx8EB
+
+webcheck:
+  utd_app:
+    username: user
+    password: xxxx
+    interval: 600
