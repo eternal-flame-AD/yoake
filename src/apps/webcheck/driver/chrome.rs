@@ -62,6 +62,9 @@ impl Drop for ChromeDriver {
             if let Err(e) = child.kill() {
                 log::error!("Error killing chrome driver: {}", e);
             }
+            if let Err(e) = child.wait() {
+                log::error!("Error waiting for chrome driver to exit: {}", e);
+            }
         }
     }
 }

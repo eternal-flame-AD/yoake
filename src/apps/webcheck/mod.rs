@@ -92,7 +92,14 @@ impl WebcheckApp {
         caps.set_disable_gpu().unwrap();
 
         let driver = driver.connect(caps).await?;
-        let response = checker.check(&driver).await?;
+        let response = match checker.check(&driver).await {
+            Ok(response) => response,
+            Err(e) => {
+                driver.quit().await?;
+                return Err(e);
+            }
+        };
+        driver.quit().await?;
 
         let new_response = LastResponse {
             response: response.clone(),
