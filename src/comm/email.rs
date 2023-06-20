@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use lettre::{
     message::header::ContentType, transport::smtp::authentication::Credentials, Transport,
 };
@@ -12,11 +13,16 @@ pub struct EmailCommunicator {
 impl EmailCommunicator {
     pub fn new(config: &'static Config) -> Self {
         Self {
-            config: &config.comm.email,
+            config: &config
+                .comm
+                .email
+                .as_ref()
+                .expect("Email communicator not configured"),
         }
     }
 }
 
+#[async_trait]
 impl Communicator for EmailCommunicator {
     fn name(&self) -> &'static str {
         "email"
@@ -24,7 +30,7 @@ impl Communicator for EmailCommunicator {
     fn supported_mimes(&self) -> Vec<&'static str> {
         vec!["text/plain", "text/html"]
     }
-    fn send_message(&self, message: &super::Message) -> anyhow::Result<()> {
+    async fn send_message(&self, message: &super::Message) -> anyhow::Result<()> {
         let mailer = lettre::SmtpTransport::relay(&self.config.host)?
             .credentials(Credentials::new(
                 self.config.username.clone(),

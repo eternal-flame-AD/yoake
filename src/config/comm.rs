@@ -2,8 +2,9 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    pub email: EmailConfig,
-    pub gotify: GotifyConfig,
+    pub email: Option<EmailConfig>,
+    pub gotify: Option<GotifyConfig>,
+    pub discord: Option<DiscordConfig>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -21,4 +22,10 @@ pub struct EmailConfig {
 pub struct GotifyConfig {
     pub url: String,
     pub token: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct DiscordConfig {
+    pub token: String,
+    pub channel_id: u64,
 }

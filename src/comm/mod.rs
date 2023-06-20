@@ -1,8 +1,10 @@
 use std::{collections::HashMap, sync::Arc};
 
 use anyhow::Result;
+use async_trait::async_trait;
 use log::{error, warn};
 
+pub mod discord;
 pub mod email;
 pub mod gotify;
 
@@ -28,10 +30,16 @@ impl Default for Message {
 pub const MIME_PLAIN: &'static str = "text/plain";
 pub const MIME_HTML: &'static str = "text/html";
 
+#[async_trait]
 pub trait Communicator {
     fn name(&self) -> &'static str;
     fn supported_mimes(&self) -> Vec<&'static str>;
-    fn send_message(&self, message: &Message) -> Result<()>;
+    async fn send_message(&self, message: &Message) -> Result<()>;
+}
+
+#[async_trait]
+pub trait MessageDigestor {
+    async fn digest(&self, message: &Message) -> Result<Option<Message>>;
 }
 
 pub struct GlobalCommunicator {
@@ -70,6 +78,7 @@ impl GlobalCommunicator {
     }
 }
 
+#[async_trait]
 impl Communicator for GlobalCommunicator {
     fn name(&self) -> &'static str {
         "global"
@@ -79,11 +88,11 @@ impl Communicator for GlobalCommunicator {
         self.communicators.keys().map(|k| *k).collect()
     }
 
-    fn send_message(&self, message: &Message) -> Result<()> {
+    async fn send_message(&self, message: &Message) -> Result<()> {
         let mime = message.mime;
         if let Some(communicators) = self.communicators.get(mime) {
             for communicator in communicators {
-                if let Err(e) = communicator.send_message(message) {
+                if let Err(e) = communicator.send_message(message).await {
                     warn!("Failed to send message with {}: {}", communicator.name(), e);
                     continue;
                 }

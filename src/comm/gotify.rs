@@ -1,7 +1,7 @@
 use super::Communicator;
 use crate::config::{comm::GotifyConfig, Config};
+use async_trait::async_trait;
 use serde::Serialize;
-
 pub struct GotifyCommunicator {
     config: &'static GotifyConfig,
 }
@@ -9,7 +9,11 @@ pub struct GotifyCommunicator {
 impl GotifyCommunicator {
     pub fn new(config: &'static Config) -> Self {
         Self {
-            config: &config.comm.gotify,
+            config: &config
+                .comm
+                .gotify
+                .as_ref()
+                .expect("Gotify communicator not configured"),
         }
     }
 }
@@ -49,6 +53,7 @@ struct GotifyMessageExtrasClientDisplay {
     content_type: String,
 }
 
+#[async_trait]
 impl Communicator for GotifyCommunicator {
     fn name(&self) -> &'static str {
         "gotify"
@@ -56,13 +61,14 @@ impl Communicator for GotifyCommunicator {
     fn supported_mimes(&self) -> Vec<&'static str> {
         vec!["text/plain", "text/markdown"]
     }
-    fn send_message(&self, message: &super::Message) -> anyhow::Result<()> {
-        let client = reqwest::blocking::Client::new();
+    async fn send_message(&self, message: &super::Message) -> anyhow::Result<()> {
+        let client = reqwest::Client::new();
         let response = client
             .post(&format!("{}/message", self.config.url))
             .header("X-Gotify-Key", &self.config.token)
             .json::<GotifyMessage>(&message.into())
-            .send()?;
+            .send()
+            .await?;
 
         if !response.status().is_success() {
             anyhow::bail!("Gotify returned an error: {:?}", response);

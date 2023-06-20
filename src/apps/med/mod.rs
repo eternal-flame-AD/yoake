@@ -1,24 +1,29 @@
-use std::{
-    future::Future,
-    pin::Pin,
-    sync::{Arc, Mutex},
-};
+use std::sync::Arc;
 
-use crate::{config::Config, AppState};
+use crate::{
+    comm::{Message, MessageDigestor},
+    config::Config,
+    AppState,
+};
 
 use super::App;
 
+use anyhow::Result;
+use async_trait::async_trait;
 use axum::{
     routing::{delete, get, post},
     Extension, Router,
 };
-use tokio::sync::Mutex as AsyncMutex;
+use chrono::DateTime;
+use lazy_static::lazy_static;
+use serenity::utils::MessageBuilder;
+use tokio::sync::Mutex;
 
 mod directive;
 mod log;
 
 pub struct MedManagementApp {
-    state: AsyncMutex<Option<MedManagementAppState>>,
+    state: Mutex<Option<MedManagementAppState>>,
 }
 
 struct MedManagementAppState {
@@ -28,23 +33,70 @@ struct MedManagementAppState {
 impl MedManagementApp {
     pub fn new() -> Self {
         Self {
-            state: AsyncMutex::new(None),
+            state: Mutex::new(None),
         }
     }
 }
 
+pub fn format_relative_time<Tz: chrono::TimeZone>(
+    time: chrono::DateTime<Tz>,
+    relative_to: chrono::DateTime<Tz>,
+) -> String {
+    let duration = time.signed_duration_since(relative_to);
+    let duration = chrono_humanize::HumanTime::from(duration);
+    duration.to_string()
+}
+
+#[async_trait]
+impl MessageDigestor for Arc<MedManagementApp> {
+    async fn digest(&self, message: &Message) -> Result<Option<Message>> {
+        lazy_static! {
+            static ref REGEX_GET_DIRECTIVE: regex::Regex =
+                regex::Regex::new(r"get med info$").unwrap();
+        }
+        if REGEX_GET_DIRECTIVE.is_match(&message.body) {
+            let next_doses = log::project_next_doses(self).await?;
+
+            let mut msg = MessageBuilder::new();
+            msg.push_line("");
+
+            for next_dose in next_doses.iter() {
+                msg.push_bold(next_dose.0.name.to_string());
+                msg.push_line(":");
+                msg.push_line(format!("Offset: {:.2}", next_dose.1.dose_offset,));
+                msg.push_line(format!(
+                    "Next dose: {}",
+                    format_relative_time(
+                        DateTime::<chrono::Utc>::from_utc(next_dose.1.time_expected, chrono::Utc),
+                        chrono::Utc::now()
+                    )
+                ));
+                msg.push_line("");
+            }
+
+            return Ok(Some(Message {
+                subject: "".to_string(),
+                priority: 0,
+                body: msg.build(),
+                mime: message.mime.clone(),
+            }));
+        }
+
+        Ok(None)
+    }
+}
+
+#[async_trait]
 impl App for MedManagementApp {
-    fn initialize(
+    async fn initialize(
         self: Arc<Self>,
         _config: &'static Config,
         app_state: Arc<Mutex<AppState>>,
-    ) -> Pin<Box<dyn Future<Output = ()>>> {
-        Box::pin(async move {
-            let mut state = self.state.lock().await;
-            *state = Some(MedManagementAppState {
-                global_app_state: app_state,
-            });
-        })
+    ) {
+        let mut state = self.state.lock().await;
+        *state = Some(MedManagementAppState {
+            global_app_state: app_state,
+        });
     }
 
     fn api_routes(self: Arc<Self>) -> Router {
@@ -80,5 +132,8 @@ impl App for MedManagementApp {
                 delete(log::route_delete_log),
             )
             .layer(Extension(self.clone()))
+    }
+    fn message_digestors(self: Arc<Self>) -> Vec<Box<dyn MessageDigestor + Send + Sync>> {
+        vec![Box::new(self)]
     }
 }

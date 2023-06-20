@@ -1,14 +1,11 @@
-use std::{
-    future::Future,
-    pin::Pin,
-    sync::{Arc, Mutex},
-};
+use std::sync::Arc;
 
 use askama::Template;
+use async_trait::async_trait;
 use axum::{body::HttpBody, extract::Query, http::Request, routing::get, Extension, Router};
 use log::{debug, info};
 use serde::{Deserialize, Serialize};
-use tokio::sync::Mutex as AsyncMutex;
+use tokio::sync::Mutex;
 
 use crate::{
     apps::{
@@ -62,7 +59,7 @@ pub async fn query_grades(
 }
 
 pub struct CanvasLMSApp {
-    state: AsyncMutex<CanvasLMSAppState>,
+    state: Mutex<CanvasLMSAppState>,
 }
 
 struct CanvasLMSAppState {
@@ -114,7 +111,7 @@ where
 impl CanvasLMSApp {
     pub fn new() -> Self {
         Self {
-            state: AsyncMutex::new(CanvasLMSAppState {
+            state: Mutex::new(CanvasLMSAppState {
                 config: None,
                 grade_cache: GradeCache {
                     last_updated: chrono::Local::now(),
@@ -149,13 +146,16 @@ impl CanvasLMSApp {
                         };
                         let template_rendered = template_ctx.render().unwrap();
                         let global_app_state =
-                            state.global_app_state.as_ref().unwrap().lock().unwrap();
-                        let email_result = global_app_state.comm.send_message(&Message {
-                            subject: "New grades available".to_string(),
-                            body: template_rendered,
-                            mime: "text/html",
-                            ..Default::default()
-                        });
+                            state.global_app_state.as_ref().unwrap().lock().await;
+                        let email_result = global_app_state
+                            .comm
+                            .send_message(&Message {
+                                subject: "New grades available".to_string(),
+                                body: template_rendered,
+                                mime: "text/html",
+                                ..Default::default()
+                            })
+                            .await;
                         match email_result {
                             Ok(_) => {
                                 info!("Sent email notification for new grades");
@@ -176,12 +176,9 @@ impl CanvasLMSApp {
     }
 }
 
+#[async_trait]
 impl App for CanvasLMSApp {
-    fn initialize(
-        self: Arc<Self>,
-        config: &'static Config,
-        app_state: Arc<Mutex<AppState>>,
-    ) -> Pin<Box<dyn Future<Output = ()>>> {
+    async fn initialize(self: Arc<Self>, config: &'static Config, app_state: Arc<Mutex<AppState>>) {
         let self_clone = self.clone();
 
         let refresh_interval = config.canvas_lms.refresh_interval;
@@ -189,27 +186,23 @@ impl App for CanvasLMSApp {
             panic!("Canvas LMS refresh interval cannot be 0");
         }
 
-        let init_async = Box::pin(async move {
-            let mut state = self.state.lock().await;
-            state.global_app_state = Some(app_state);
-            state.config = Some(config);
-            state.grade_cache = GradeCache {
-                last_updated: chrono::Local::now(),
-                response: None,
-            };
+        let mut state = self.state.lock().await;
+        state.global_app_state = Some(app_state);
+        state.config = Some(config);
+        state.grade_cache = GradeCache {
+            last_updated: chrono::Local::now(),
+            response: None,
+        };
 
-            tokio::spawn(async move {
-                let mut ticker =
-                    tokio::time::interval(std::time::Duration::from_secs(refresh_interval));
-                ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
-                loop {
-                    self_clone.refresh_grades().await;
-                    ticker.tick().await;
-                }
-            });
+        tokio::spawn(async move {
+            let mut ticker =
+                tokio::time::interval(std::time::Duration::from_secs(refresh_interval));
+            ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
+            loop {
+                self_clone.refresh_grades().await;
+                ticker.tick().await;
+            }
         });
-
-        init_async
     }
 
     fn api_routes(self: Arc<Self>) -> Router {

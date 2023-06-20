@@ -6,6 +6,7 @@ use crate::{
     models::med::{Medication, MedicationLog},
 };
 
+use anyhow::Result;
 use axum::{
     extract::{Path, Query},
     Extension,
@@ -60,6 +61,55 @@ pub fn project_next_dose(med: &Medication, med_logs: Vec<MedicationLog>) -> Medi
     }
 }
 
+pub async fn project_next_doses(
+    app: &MedManagementApp,
+) -> Result<Vec<(Medication, MedicationLog)>> {
+    let state = app.state.lock().await;
+    let state = state.as_ref().unwrap();
+    let mut global_app_state = state.global_app_state.lock().await;
+
+    let meds = {
+        use crate::schema::medications::dsl::*;
+        use diesel::prelude::*;
+
+        medications
+            .load::<Medication>(&mut global_app_state.db)
+            .map_err(|e| {
+                error!("Failed to load meds: {:?}", e);
+                e
+            })?
+    };
+
+    let mut med_logs = Vec::with_capacity(meds.len());
+    for med in &meds {
+        let logs = {
+            use crate::schema::medication_logs::dsl::*;
+            use diesel::prelude::*;
+
+            medication_logs
+                .order(time_actual.desc())
+                .filter(med_uuid.eq(&med.uuid))
+                .limit(10)
+                .load::<MedicationLog>(&mut global_app_state.db)
+                .map_err(|e| {
+                    error!("Failed to load logs: {:?}", e);
+                    e
+                })?
+        };
+
+        med_logs.push(logs);
+    }
+
+    let mut res = Vec::with_capacity(meds.len());
+
+    for (med, logs) in meds.into_iter().zip(med_logs.into_iter()) {
+        let next_dose = project_next_dose(&med, logs);
+        res.push((med, next_dose));
+    }
+
+    Ok(res)
+}
+
 pub async fn route_project_next_dose(
     auth: AuthInfo,
     app: Extension<Arc<MedManagementApp>>,
@@ -69,7 +119,7 @@ pub async fn route_project_next_dose(
 
     let state = app.state.lock().await;
     let state = state.as_ref().unwrap();
-    let mut global_app_state = state.global_app_state.lock().unwrap();
+    let mut global_app_state = state.global_app_state.lock().await;
 
     let med = {
         use crate::schema::medications::dsl::*;
@@ -122,7 +172,7 @@ pub async fn route_get_log(
 
     let state = app.state.lock().await;
     let state = state.as_ref().unwrap();
-    let mut global_app_state = state.global_app_state.lock().unwrap();
+    let mut global_app_state = state.global_app_state.lock().await;
 
     let med_logs = {
         use crate::schema::medication_logs::dsl::*;
@@ -169,7 +219,7 @@ pub async fn route_post_log(
 
     let state = app.state.lock().await;
     let state = state.as_ref().unwrap();
-    let mut global_app_state = state.global_app_state.lock().unwrap();
+    let mut global_app_state = state.global_app_state.lock().await;
 
     let med = {
         use crate::schema::medications::dsl::*;
@@ -249,7 +299,7 @@ pub async fn route_delete_log(
 
     let state = app.state.lock().await;
     let state = state.as_ref().unwrap();
-    let mut global_app_state = state.global_app_state.lock().unwrap();
+    let mut global_app_state = state.global_app_state.lock().await;
 
     {
         use crate::schema::medication_logs::dsl::*;

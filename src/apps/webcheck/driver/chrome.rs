@@ -9,7 +9,7 @@ pub struct ChromeDriver {
 
 impl ChromeDriver {
     pub fn new() -> Self {
-        let port = rand_core::OsRng.next_u32() as u16 + 10000;
+        let port = (rand_core::OsRng.next_u32() % 1024) as u16 + 10000;
         Self::new_port(port)
     }
     pub fn new_port(port: u16) -> Self {

@@ -48,7 +48,7 @@ pub async fn route_get_directive(
 
     let state = app.state.lock().await;
     let state = state.as_ref().unwrap();
-    let mut global_app_state = state.global_app_state.lock().unwrap();
+    let mut global_app_state = state.global_app_state.lock().await;
 
     let meds = {
         use crate::schema::medications::dsl::*;
@@ -77,7 +77,7 @@ pub async fn route_post_directive(
 
     let state = app.state.lock().await;
     let state = state.as_ref().unwrap();
-    let mut global_app_state = state.global_app_state.lock().unwrap();
+    let mut global_app_state = state.global_app_state.lock().await;
 
     form.uuid = uuid::Uuid::new_v4().to_string();
     form.created = chrono::Utc::now().naive_local();
@@ -111,7 +111,7 @@ pub async fn route_patch_directive(
 
     let state = app.state.lock().await;
     let state = state.as_ref().unwrap();
-    let mut global_app_state = state.global_app_state.lock().unwrap();
+    let mut global_app_state = state.global_app_state.lock().await;
 
     let res = {
         use crate::schema::medications;
@@ -155,7 +155,7 @@ pub async fn route_delete_directive(
 
     let state = app.state.lock().await;
     let state = state.as_ref().unwrap();
-    let mut global_app_state = state.global_app_state.lock().unwrap();
+    let mut global_app_state = state.global_app_state.lock().await;
 
     {
         use crate::schema::medications::dsl::medications;

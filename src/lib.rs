@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use apps::{med, webcheck};
 use axum::{http::Request, middleware::Next, response::Response, routing::get, Extension, Router};
@@ -7,6 +7,7 @@ use diesel::{sqlite, Connection};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use hyper::Method;
 use log::info;
+use tokio::sync::Mutex;
 use tower_http::cors::{self, CorsLayer};
 
 use crate::{
@@ -85,7 +86,7 @@ pub async fn server_listen(router: Router) {
 pub async fn main_server(dev: bool) {
     let config = config::get_config();
 
-    let apps: &mut [Arc<dyn App>] = &mut [
+    let apps: &mut [Arc<dyn App + Send + Sync>] = &mut [
         Arc::new(server_info::ServerInfoApp::new()),
         Arc::new(auth::AuthApp::new()),
         Arc::new(canvas_lms::CanvasLMSApp::new()),
@@ -93,9 +94,29 @@ pub async fn main_server(dev: bool) {
         Arc::new(webcheck::WebcheckApp::new()),
     ];
 
+    let mut message_digestor = Vec::new();
+    for app in &mut *apps {
+        message_digestor.extend(app.clone().message_digestors());
+    }
+    let message_digestor = Arc::new(message_digestor);
+
     let mut comm = GlobalCommunicator::new();
-    comm.add_communicator(Arc::new(comm::gotify::GotifyCommunicator::new(config)));
-    comm.add_communicator(Arc::new(comm::email::EmailCommunicator::new(config)));
+    if config.comm.discord.is_some() {
+        let discord_comm = Arc::new(
+            comm::discord::DiscordCommunicator::new(
+                config.comm.discord.as_ref().unwrap(),
+                message_digestor,
+            )
+            .await,
+        );
+        comm.add_communicator(discord_comm);
+    }
+    if config.comm.gotify.is_some() {
+        comm.add_communicator(Arc::new(comm::gotify::GotifyCommunicator::new(config)));
+    }
+    if config.comm.email.is_some() {
+        comm.add_communicator(Arc::new(comm::email::EmailCommunicator::new(config)));
+    }
     let app_state = Arc::new(Mutex::new(AppState {
         db: establish_db_connection(),
         comm: comm,

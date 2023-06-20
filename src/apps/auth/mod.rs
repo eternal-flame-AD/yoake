@@ -1,9 +1,6 @@
-use std::{
-    future::Future,
-    pin::Pin,
-    sync::{Arc, Mutex},
-};
+use std::sync::Arc;
 
+use async_trait::async_trait;
 use axum::{
     body::HttpBody,
     error_handling::HandleErrorLayer,
@@ -14,6 +11,7 @@ use axum::{
 };
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use tokio::sync::Mutex;
 use tower::ServiceBuilder;
 
 use crate::{
@@ -66,7 +64,7 @@ pub async fn route_login(
 ) -> Result<(Extension<SessionStore>, ApiResponse<()>), ApiResponse<()>> {
     let failed_response = ApiResponse::<()>::error("Invalid credentials".to_string(), 401, None);
 
-    let state = app.state.lock().unwrap();
+    let state = app.state.lock().await;
     let state = state.as_ref().unwrap();
 
     let Some(user) = state.config.auth.users.get(&form.username) else {
@@ -125,19 +123,14 @@ impl AuthApp {
     }
 }
 
+#[async_trait]
 impl App for AuthApp {
-    fn initialize(
-        self: Arc<Self>,
-        config: &'static Config,
-        app_state: Arc<Mutex<AppState>>,
-    ) -> Pin<Box<dyn Future<Output = ()>>> {
-        let mut state = self.state.lock().unwrap();
+    async fn initialize(self: Arc<Self>, config: &'static Config, app_state: Arc<Mutex<AppState>>) {
+        let mut state = self.state.lock().await;
         *state = Some(AuthAppState {
             config,
             _app_state: app_state,
         });
-
-        Box::pin(async {})
     }
 
     fn api_routes(self: Arc<Self>) -> Router {

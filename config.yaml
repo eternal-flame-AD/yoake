@@ -11,6 +11,8 @@ canvas_lms:
   refresh_interval: 300
 
 comm:
+  discord:
+    token: "xxx"
   gotify:
     url: https://gotify.yumechi.jp
     token: Axxxxxx

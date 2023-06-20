@@ -1,22 +1,21 @@
-use crate::{config::Config, AppState};
+use crate::{comm::MessageDigestor, config::Config, AppState};
+use async_trait::async_trait;
 use axum::Router;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
-use std::{
-    future::Future,
-    pin::Pin,
-    sync::{Arc, Mutex},
-};
-
+#[async_trait]
 pub trait App {
-    fn initialize(
+    async fn initialize(
         self: Arc<Self>,
         _config: &'static Config,
         _app_state: Arc<Mutex<AppState>>,
-    ) -> Pin<Box<dyn Future<Output = ()>>> {
-        Box::pin(async {})
-    }
+    );
     fn api_routes(self: Arc<Self>) -> Router {
         Router::new()
+    }
+    fn message_digestors(self: Arc<Self>) -> Vec<Box<dyn MessageDigestor + Send + Sync>> {
+        vec![]
     }
 }
 

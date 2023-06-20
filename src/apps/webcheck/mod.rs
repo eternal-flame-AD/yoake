@@ -1,9 +1,4 @@
-use std::{
-    collections::HashMap,
-    future::Future,
-    pin::Pin,
-    sync::{Arc, Mutex},
-};
+use std::{collections::HashMap, sync::Arc};
 
 use async_trait::async_trait;
 use axum::{routing::get, Extension, Router};
@@ -11,7 +6,7 @@ use chrono::DateTime;
 use log::info;
 use serde::{Deserialize, Serialize};
 use thirtyfour::{DesiredCapabilities, WebDriver};
-use tokio::sync::Mutex as AsyncMutex;
+use tokio::sync::Mutex;
 
 use crate::{
     comm::{Communicator, Message},
@@ -29,7 +24,7 @@ mod driver;
 mod utd_app;
 
 pub struct WebcheckApp {
-    state: AsyncMutex<WebcheckAppState>,
+    state: Mutex<WebcheckAppState>,
 }
 
 struct WebcheckAppState {
@@ -69,7 +64,7 @@ pub trait WebDriverChecker {
 impl WebcheckApp {
     pub fn new() -> Self {
         Self {
-            state: AsyncMutex::new(WebcheckAppState {
+            state: Mutex::new(WebcheckAppState {
                 config: None,
                 global_app_state: None,
                 last_response: HashMap::new(),
@@ -116,14 +111,15 @@ impl WebcheckApp {
                         .as_ref()
                         .unwrap()
                         .lock()
-                        .unwrap()
+                        .await
                         .comm
                         .send_message(&Message {
                             subject: format!("webcheck {} changed", key),
                             body: format!("{} changed to {}", key, response),
                             mime: "text/plain",
                             priority: 0,
-                        })?;
+                        })
+                        .await?;
                 }
             }
             None => {}
@@ -167,35 +163,30 @@ impl WebcheckApp {
     }
 }
 
+#[async_trait]
 impl App for WebcheckApp {
-    fn initialize(
-        self: Arc<Self>,
-        config: &'static Config,
-        app_state: Arc<Mutex<AppState>>,
-    ) -> Pin<Box<dyn Future<Output = ()>>> {
-        Box::pin(async move {
-            let mut state = self.state.lock().await;
-            state.config = Some(config);
-            state.global_app_state = Some(app_state);
+    async fn initialize(self: Arc<Self>, config: &'static Config, app_state: Arc<Mutex<AppState>>) {
+        let mut state = self.state.lock().await;
+        state.config = Some(config);
+        state.global_app_state = Some(app_state);
 
-            let Some(ref config) = config.webcheck else {
+        let Some(ref config) = config.webcheck else {
                 return;
             };
 
-            config.keys().for_each(|key| match key.as_str() {
-                "utd_app" => {
-                    let mut checker = utd_app::UTDAppChecker::new();
-                    checker
-                        .init(config.get(key).unwrap())
-                        .expect("Failed to initialize UTDAppChecker");
-                    state.checkers.insert(key.clone(), Box::new(checker));
-                }
-                _ => panic!("Invalid key in webcheck config: {}", key),
-            });
+        config.keys().for_each(|key| match key.as_str() {
+            "utd_app" => {
+                let mut checker = utd_app::UTDAppChecker::new();
+                checker
+                    .init(config.get(key).unwrap())
+                    .expect("Failed to initialize UTDAppChecker");
+                state.checkers.insert(key.clone(), Box::new(checker));
+            }
+            _ => panic!("Invalid key in webcheck config: {}", key),
+        });
 
-            let self_clone = self.clone();
-            tokio::spawn(self_clone.run_check_loops());
-        })
+        let self_clone = self.clone();
+        tokio::spawn(self_clone.run_check_loops());
     }
 
     fn api_routes(self: Arc<Self>) -> Router {
