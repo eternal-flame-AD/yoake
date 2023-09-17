@@ -3,6 +3,7 @@ listen:
   addr: 127.0.0.1:3000
 
 db:
+  data_dir: data
   url: sqlite://data/development.db
 
 canvas_lms:

@@ -21,6 +21,7 @@ pub trait App {
 
 pub mod auth;
 pub mod canvas_lms;
+pub mod jpn_wordbook;
 pub mod med;
 pub mod server_info;
 pub mod webcheck;

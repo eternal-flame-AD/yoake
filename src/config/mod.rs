@@ -40,6 +40,7 @@ pub struct ListenConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct DbConfig {
+    pub data_dir: String,
     pub url: String,
 }
 

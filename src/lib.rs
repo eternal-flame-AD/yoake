@@ -92,6 +92,7 @@ pub async fn main_server(dev: bool) {
         Arc::new(canvas_lms::CanvasLMSApp::new()),
         Arc::new(med::MedManagementApp::new()),
         Arc::new(webcheck::WebcheckApp::new()),
+        Arc::new(apps::jpn_wordbook::JpnWordBookApp::new()),
     ];
 
     let mut message_digestor = Vec::new();

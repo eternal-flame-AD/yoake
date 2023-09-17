@@ -3,6 +3,7 @@ import './App.css'
 import { AppBar, Button, Divider, IconButton, Toolbar, Drawer, List, ListItem, ListItemButton, ListItemText } from '@mui/material'
 import Typography from '@mui/material/Typography'
 import { Box, Container } from '@mui/system'
+import BookIcon from '@mui/icons-material/Book'
 import MenuIcon from '@mui/icons-material/Menu'
 import HomeIcon from '@mui/icons-material/Home'
 import GradeIcon from '@mui/icons-material/Grade'
@@ -58,6 +59,7 @@ function PageBase({ children, persistentPages }: { children?: ReactNode, persist
                     { key: "home", name: "Home", icon: <HomeIcon />, path: "/" },
                     { key: "grades", name: "Grades", icon: <GradeIcon />, path: "/grades" },
                     { key: "meds", name: "Meds", icon: <MedicationIcon />, path: "/meds" },
+                    { key: "jpn-wordbook", name: "WordBook", icon: <BookIcon />, path: "/jpn_wordbook" },
                     { key: "gotify", name: "Gotify", icon: <CampaignIcon />, path: "/gotify_ui" },
                 ].map((item) => (
                     <ListItem key={item.key}

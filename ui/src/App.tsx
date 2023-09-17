@@ -13,6 +13,7 @@ import GradesPage from './pages/GradesPage';
 import FramePage from './pages/FramePage';
 import { EnsureRole } from './components/EnsureRole';
 import MedsPage from './pages/MedsPage';
+import JpnWordbookPage from './pages/JpnWordbookPage';
 
 
 const persistent_pages = [
@@ -54,6 +55,10 @@ function App() {
     {
       path: "/meds",
       element: <PageBase persistentPages={persistent_pages} ><EnsureRole role="Admin"><MedsPage /></EnsureRole></PageBase>
+    },
+    {
+      path: "/jpn_wordbook",
+      element: <PageBase persistentPages={persistent_pages} ><JpnWordbookPage /></PageBase>
     },
     {
       path: "/gotify_ui",
