@@ -50,7 +50,7 @@ impl Grading {
                 if old.last_updated() < new.last_updated() {
                     updates.push(new);
                 }
-            } else {
+            } else if new.last_updated().is_some() {
                 updates.push(new);
             }
         }
